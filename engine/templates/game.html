@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryForge Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .typing-effect::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#ec4899',
+                        dark: '#0f172a',
+                        surface: '#1e293b',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-black text-gray-100 font-sans h-screen flex flex-col overflow-hidden" x-data="game()">
+
+    <!-- Top HUD -->
+    <header
+        class="h-14 bg-surface/80 backdrop-blur border-b border-gray-800 flex items-center justify-between px-6 z-10">
+        <div class="flex items-center gap-4">
+            <div class="flex flex-col">
+                <span class="font-bold text-lg leading-tight" x-text="data.location?.name || 'Unknown'"></span>
+                <span class="text-xs text-gray-400" x-text="data.state?.time?.display"></span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-6 text-sm font-medium">
+            <div class="flex items-center gap-2 text-yellow-400">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z">
+                    </path>
+                </svg>
+                <span x-text="data.state?.player?.gold + ' G'"></span>
+            </div>
+            <div class="flex items-center gap-2 text-red-400">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                <span x-text="data.state?.player?.health + '/' + data.state?.player?.max_health"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Viewport -->
+    <main class="flex-1 relative flex">
+
+        <!-- Background Image -->
+        <div class="absolute inset-0 z-0">
+            <template x-if="data.location?.image">
+                <img :src="data.location.image" class="w-full h-full object-cover opacity-30">
+            </template>
+            <div class="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 to-transparent"></div>
+        </div>
+
+        <!-- Content Container -->
+        <div class="relative z-10 container mx-auto px-4 py-8 flex flex-col justify-end h-full max-w-4xl">
+
+            <!-- Text Output -->
+            <div class="mb-8 space-y-4 min-h-[200px]">
+                <div class="prose prose-invert max-w-none text-lg leading-relaxed text-gray-200 drop-shadow-md"
+                    x-html="data.location?.description"></div>
+            </div>
+
+            <!-- Choices -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <template x-for="(choice, index) in data.location?.choices" :key="index">
+                    <button @click="makeChoice(choice)"
+                        class="bg-surface/90 hover:bg-primary/90 hover:scale-[1.02] border border-gray-700 hover:border-primary transition-all p-4 rounded-lg text-left group">
+                        <span class="font-semibold block group-hover:text-white" x-text="choice.text"></span>
+                    </button>
+                </template>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Bottom Bar -->
+    <footer class="h-12 bg-darker border-t border-gray-800 flex items-center justify-center gap-2">
+        <button
+            class="px-4 py-1.5 rounded hover:bg-gray-800 text-gray-400 hover:text-white text-sm transition-colors">Inventory</button>
+        <button
+            class="px-4 py-1.5 rounded hover:bg-gray-800 text-gray-400 hover:text-white text-sm transition-colors">Quests</button>
+        <button
+            class="px-4 py-1.5 rounded hover:bg-gray-800 text-gray-400 hover:text-white text-sm transition-colors">Gallery</button>
+        <!DOCTYPE html>
+        <html lang="en" class="dark">
+
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>StoryForge Game</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+            <style>
+                [x-cloak] {
+                    display: none !important;
+                }
+
+                .typing-effect::after {
+                    content: '|';
+                    animation: blink 1s infinite;
+                }
+
+                @keyframes blink {
+
+                    0%,
+                    100% {
+                        opacity: 1;
+                    }
+
+                    50% {
+                        opacity: 0;
+                    }
+                }
+            </style>
+            <script>
+                tailwind.config = {
+                    darkMode: 'class',
+                    theme: {
+                        extend: {
+                            colors: {
+                                primary: '#6366f1',
+                                secondary: '#ec4899',
+                                dark: '#0f172a',
+                                surface: '#1e293b',
+                            }
+                        }
+                    }
+                }
+            </script>
+        </head>
+
+        <body class="bg-black text-gray-100 font-sans h-screen flex flex-col overflow-hidden" x-data="game()">
+
+            <!-- Top HUD -->
+            <header
+                class="h-14 bg-surface/80 backdrop-blur border-b border-gray-800 flex items-center justify-between px-6 z-10">
+                <div class="flex items-center gap-4">
+                    <div class="flex flex-col">
+                        <span class="font-bold text-lg leading-tight" x-text="data.location?.name || 'Unknown'"></span>
+                        <span class="text-xs text-gray-400" x-text="data.state?.time?.display"></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-6 text-sm font-medium">
+                    <div class="flex items-center gap-2 text-yellow-400">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z">
+                            </path>
+                        </svg>
+                        <span x-text="data.state?.player?.gold + ' G'"></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-red-400">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        <span x-text="data.state?.player?.health + '/' + data.state?.player?.max_health"></span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Viewport -->
+            <main class="flex-1 relative flex">
+
+                <!-- Background Image -->
+                <div class="absolute inset-0 z-0">
+                    <template x-if="data.location?.image">
+                        <img :src="data.location.image" class="w-full h-full object-cover opacity-30">
+                    </template>
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 to-transparent"></div>
+                </div>
+
+                <!-- Content Container -->
+                <div class="relative z-10 container mx-auto px-4 py-8 flex flex-col justify-end h-full max-w-4xl">
+
+                    <!-- Text Output -->
+                    <div class="mb-8 space-y-4 min-h-[200px]">
+                        <div class="prose prose-invert max-w-none text-lg leading-relaxed text-gray-200 drop-shadow-md"
+                            x-html="data.location?.description"></div>
+                    </div>
+
+                    <!-- Choices -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <template x-for="(choice, index) in data.location?.choices" :key="index">
+                            <button @click="makeChoice(choice)"
+                                class="bg-surface/90 hover:bg-primary/90 hover:scale-[1.02] border border-gray-700 hover:border-primary transition-all p-4 rounded-lg text-left group">
+                                <span class="font-semibold block group-hover:text-white" x-text="choice.text"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                </div>
+            </main>
+
+            <!-- Bottom Bar -->
+            <footer class="h-12 bg-darker border-t border-gray-800 flex items-center justify-center gap-2">
+                <button
+                    class="px-4 py-1.5 rounded hover:bg-gray-800 text-gray-400 hover:text-white text-sm transition-colors">Inventory</button>
+                <button
+                    class="px-4 py-1.5 rounded hover:bg-gray-800 text-gray-400 hover:text-white text-sm transition-colors">Quests</button>
+                <button
+                    class="px-4 py-1.5 rounded hover:bg-gray-800 text-gray-400 hover:text-white text-sm transition-colors">Gallery</button>
+                <div class="w-px h-4 bg-gray-700 mx-2"></div>
+                <button
+                    class="px-4 py-1.5 rounded hover:bg-gray-800 text-gray-400 hover:text-white text-sm transition-colors">Menu
+                    (Esc)</button>
+            </footer>
+
+            <!-- Modals -->
+
+            <!-- Cheat Menu (F1) -->
+            <div x-show="showCheatMenu" @keydown.window.f1.prevent="showCheatMenu = !showCheatMenu"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" x-cloak
+                x-transition>
+                <div class="bg-surface border border-gray-700 p-6 rounded-xl w-96 shadow-2xl">
+                    <h3 class="text-xl font-bold mb-4 text-primary">Cheat Menu</h3>
+                    <div class="space-y-2">
+                        <button @click="cheat('give_gold 1000')"
+                            class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded">Give 1000 Gold</button>
+                        <button @click="cheat('heal_player 100')"
+                            class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded">Full Heal</button>
+                        <button @click="cheat('teleport start')"
+                            class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded">Teleport to Start</button>
+                    </div>
+                    <button @click="showCheatMenu = false"
+                        class="mt-6 w-full border border-gray-600 py-2 rounded hover:bg-gray-800">Close</button>
+                </div>
+            </div>
+
+            <!-- Console (F2) -->
+            <div x-show="showConsole" @keydown.window.f2.prevent="showConsole = !showConsole"
+                class="fixed inset-x-0 bottom-0 z-50 bg-black/90 border-t border-gray-700 p-4" x-cloak x-transition>
+                <div class="container mx-auto">
+                    <div class="h-32 overflow-y-auto font-mono text-xs text-gray-400 mb-2" id="console-log">
+                        <div>> System initialized.</div>
+                    </div>
+                    <input type="text" @keydown.enter="runConsoleCommand($el.value); $el.value = ''"
+                        placeholder="Enter command..."
+                        class="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 font-mono text-sm focus:border-primary focus:outline-none">
+                </div>
+            </div>
+
+            <script>
+                function game() {
+                    return {
+                        gameId: window.location.pathname.split('/').pop(),
+                        data: {},
+                        showCheatMenu: false,
+                        showConsole: false,
+
+                        async init() {
+                            await this.refreshState();
+                            // Auto-refresh or poll if needed, but for now we rely on actions
+                        },
+
+                        async refreshState() {
+                            try {
+                                const res = await fetch(`/api/game/${this.gameId}/state`);
+                                this.data = await res.json();
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        },
+
+                        async makeChoice(choice) {
+                            try {
+                                await fetch(`/api/game/${this.gameId}/action`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(choice)
+                                });
+                                await this.refreshState();
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        },
+
+                        async cheat(cmd) {
+                            // We treat cheats as function calls
+                            const parts = cmd.split(' ');
+                            await this.makeChoice({
+                                type: 'function',
+                                action: cmd,
+                                text: 'Cheat: ' + cmd
+                            });
+                            this.showCheatMenu = false;
+                        },
+
+                        async runConsoleCommand(cmd) {
+                            const log = document.getElementById('console-log');
+                            log.innerHTML += `<div>> ${cmd}</div>`;
+                            await this.cheat(cmd);
+                            log.scrollTop = log.scrollHeight;
+                        }
+                    }
+                }
+            </script>
+        </body>
+
+        </html>

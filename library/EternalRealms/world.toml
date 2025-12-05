@@ -1,0 +1,6 @@
+[metadata]
+title = "Eternal Realms"
+author = "StoryForge Team"
+version = "0.1.0"
+description = "A demo adventure showcasing the power of StoryForge."
+thumbnail = "thumbnail.png" # We won't actually have this image but it's good for metadata

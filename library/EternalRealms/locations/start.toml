@@ -1,0 +1,29 @@
+id = "start"
+name = "The Awakening Glade"
+description = """
+You wake up in a sun-dappled glade. The air smells of pine and potential.
+<br><br>
+To the **north**, you see the smoke of a village.
+To the **east**, a dark cave looms.
+<br><br>
+{{ if time.is_night() }}
+It is currently night time. The crickets are chirping.
+{{ else }}
+The sun is shining brightly.
+{{ endif }}
+"""
+
+[[choices]]
+text = "Walk to the Village (North)"
+target = "village_square"
+type = "travel"
+
+[[choices]]
+text = "Inspect the Cave (East)"
+target = "cave_entrance"
+type = "travel"
+
+[[choices]]
+text = "Check your pockets"
+target = "give_gold 10"
+type = "function"

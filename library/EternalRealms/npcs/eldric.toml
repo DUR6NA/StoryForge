@@ -1,0 +1,7 @@
+id = "eldric"
+name = "Eldric the Wise"
+description = "An elderly man with a long white beard and twinkling eyes."
+romanceable = false
+
+[dialogue]
+greeting = "Ah, a new adventurer! Welcome to Eternal Realms."

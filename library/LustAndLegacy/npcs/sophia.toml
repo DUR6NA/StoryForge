@@ -1,0 +1,24 @@
+name = "Sophia"
+portrait_happy = "assets/portraits/sophia_happy.png"
+portrait_aroused = "assets/portraits/sophia_aroused.png"
+
+personality = "shy, submissive, breeding kink"
+
+schedule = ["always downtown_bar"]
+
+shop = [
+    { item = "vibrator", price = 100, tags = ["toy"] },
+    { item = "collar", price = 250, tags = ["bdsm"] }
+]
+
+[relationship]
+attraction = 20
+romanced = false
+sex_count = 0
+
+sex_scenes = [
+    { id = "first_kiss", requires = "attraction >= 60" },
+    { id = "gentle_lovemaking", requires = "romanced" },
+    { id = "breeding_press", requires = "attraction >= 90 and player.creampie_allowed", 
+      actions = "{{impregnate sophia}}; unlock_gallery sophia_preg" }
+]

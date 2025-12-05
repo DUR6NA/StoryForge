@@ -1,0 +1,15 @@
+name = "Velvet Sin Bar"
+image = "assets/locations/bar.jpg"
+
+description = "Dim lights, throbbing music, bodies grinding on the dance floor."
+
+exits.north = "love_hotel"
+exits.south = "bdsm_club"
+
+npcs = [
+    { name = "sophia", schedule = "always" },
+    { name = "viktor", schedule = "friday-sunday" },
+    { name = "luna", schedule = "always" }
+]
+
+actions.dance = "modify_relationship luna +10; modify_skill exhibitionism +5"

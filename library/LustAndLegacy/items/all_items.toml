@@ -1,0 +1,10 @@
+[vibrator]
+name = "Remote Vibrator"
+description = "Can be used on anyone wearing it..."
+tags = ["toy", "public"]
+
+[collar]
+name = "Leather Collar"
+description = "Ownership established."
+effect = "modify_relationship +20 when gifted"
+tags = ["bdsm"]
