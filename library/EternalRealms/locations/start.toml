@@ -23,7 +23,4 @@ text = "Inspect the Cave (East)"
 target = "cave_entrance"
 type = "travel"
 
-[[choices]]
-text = "Check your pockets"
-target = "give_gold 10"
-type = "function"
+

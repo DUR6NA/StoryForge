@@ -2,12 +2,92 @@ from engine.core.state import GameState
 from engine.core.world import World
 from engine.core.parser import GameParser
 import time
+import json
+import os
 
 class GameEngine:
     def __init__(self, game_path):
+        self.game_path = game_path
+        self.game_id = os.path.basename(game_path)
         self.world = World(game_path)
         self.state = GameState()
         self.parser = GameParser(self.state)
+        
+    def get_save_path(self, slot: str = "default") -> str:
+        """Get the path to a save file for this game."""
+        saves_dir = "saves"
+        os.makedirs(saves_dir, exist_ok=True)
+        return os.path.join(saves_dir, f"{self.game_id}_{slot}.json")
+    
+    def save_state(self, slot: str = "default") -> dict:
+        """Save the current game state to a file."""
+        save_path = self.get_save_path(slot)
+        save_data = {
+            "game_id": self.game_id,
+            "timestamp": time.time(),
+            "state": self.state.to_dict()
+        }
+        try:
+            with open(save_path, "w", encoding="utf-8") as f:
+                json.dump(save_data, f, indent=2)
+            return {"status": "ok", "path": save_path}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+    
+    def load_state(self, slot: str = "default") -> dict:
+        """Load a game state from a file."""
+        save_path = self.get_save_path(slot)
+        if not os.path.exists(save_path):
+            return {"status": "error", "message": "Save file not found"}
+        try:
+            with open(save_path, "r", encoding="utf-8") as f:
+                save_data = json.load(f)
+            self.state = GameState.from_dict(save_data.get("state", {}))
+            self.parser = GameParser(self.state)  # Re-init parser with new state
+            return {"status": "ok", "timestamp": save_data.get("timestamp")}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+    
+    def get_save_data(self, slot: str = "default") -> dict:
+        """Get the current save data for export."""
+        return {
+            "game_id": self.game_id,
+            "timestamp": time.time(),
+            "state": self.state.to_dict()
+        }
+    
+    def import_save_data(self, save_data: dict) -> dict:
+        """Import save data from an external source."""
+        try:
+            if save_data.get("game_id") != self.game_id:
+                return {"status": "error", "message": "Save file is for a different game"}
+            self.state = GameState.from_dict(save_data.get("state", {}))
+            self.parser = GameParser(self.state)
+            return {"status": "ok"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+    
+    def list_saves(self) -> list:
+        """List all save files for this game."""
+        saves_dir = "saves"
+        if not os.path.exists(saves_dir):
+            return []
+        saves = []
+        for filename in os.listdir(saves_dir):
+            if filename.startswith(f"{self.game_id}_") and filename.endswith(".json"):
+                slot = filename[len(self.game_id) + 1:-5]  # Extract slot name
+                save_path = os.path.join(saves_dir, filename)
+                try:
+                    with open(save_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    saves.append({
+                        "slot": slot,
+                        "timestamp": data.get("timestamp", 0),
+                        "filename": filename
+                    })
+                except:
+                    pass
+        return sorted(saves, key=lambda x: x["timestamp"], reverse=True)
         
     def get_render_data(self):
         # 1. Get current location

@@ -1,0 +1,96 @@
+{
+    "meta": {
+        "id": "forest",
+        "name": "Enchanted Forest",
+        "author": "StoryForge",
+        "version": "1.0.0",
+        "description": "A mystical forest theme with deep greens and earthy tones",
+        "preview": null,
+        "isBuiltIn": true
+    },
+    "colors": {
+        "primary": "#22c55e",
+        "secondary": "#84cc16",
+        "accent": "#10b981",
+        "background": "#0a1f0a",
+        "surface": "#1a3d1a",
+        "surfaceAlt": "#122812",
+        "border": "#2d5a2d",
+        "text": "#dcfce7",
+        "textMuted": "#86efac",
+        "textDim": "#4ade80",
+        "success": "#22c55e",
+        "warning": "#eab308",
+        "error": "#ef4444",
+        "info": "#10b981"
+    },
+    "buttons": {
+        "primary": {
+            "background": "#22c55e",
+            "text": "#052e16",
+            "border": "transparent",
+            "hoverBackground": "#16a34a",
+            "hoverText": "#052e16",
+            "activeBackground": "#15803d"
+        },
+        "secondary": {
+            "background": "transparent",
+            "text": "#86efac",
+            "border": "#2d5a2d",
+            "hoverBackground": "#1a3d1a",
+            "hoverText": "#dcfce7",
+            "activeBackground": "#2d5a2d"
+        }
+    },
+    "sidebar": {
+        "background": "#1a3d1a",
+        "itemBackground": "transparent",
+        "itemBackgroundActive": "rgba(34, 197, 94, 0.2)",
+        "itemText": "#86efac",
+        "itemTextActive": "#22c55e",
+        "borderColor": "#2d5a2d"
+    },
+    "cards": {
+        "background": "#1a3d1a",
+        "border": "rgba(45, 90, 45, 0.5)",
+        "hoverBorder": "rgba(34, 197, 94, 0.5)",
+        "shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.4)"
+    },
+    "inputs": {
+        "background": "#122812",
+        "border": "#2d5a2d",
+        "focusBorder": "#22c55e",
+        "text": "#dcfce7",
+        "placeholder": "#4ade80"
+    },
+    "scrollbar": {
+        "track": "#1a3d1a",
+        "thumb": "#2d5a2d",
+        "thumbHover": "#22c55e"
+    },
+    "background": {
+        "type": "gradient",
+        "value": "linear-gradient(180deg, #0a1f0a 0%, #1a3d1a 50%, #0a1f0a 100%)",
+        "overlay": null
+    },
+    "effects": {
+        "blur": true,
+        "glassmorphism": true,
+        "animations": true,
+        "shadows": true
+    },
+    "sounds": {
+        "enabled": true,
+        "buttonClick": null,
+        "buttonHover": null,
+        "navigation": null,
+        "notification": null,
+        "backgroundMusic": null,
+        "volume": 0.5
+    },
+    "fonts": {
+        "primary": "Inter, system-ui, sans-serif",
+        "heading": "Inter, system-ui, sans-serif",
+        "mono": "ui-monospace, Consolas, monospace"
+    }
+}

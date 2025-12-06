@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from launcher.api.routes import router as api_router
+from launcher.api.themes import router as themes_router
+from launcher.api.settings import router as settings_router
 from fastapi.responses import FileResponse
 import os
 
@@ -16,12 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Ensure themes directory exists
+os.makedirs("themes", exist_ok=True)
+
 # Mount API routes
 app.include_router(api_router, prefix="/api")
+app.include_router(themes_router, prefix="/api")
+app.include_router(settings_router, prefix="/api")
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=os.path.join("launcher", "static")), name="static")
 app.mount("/library", StaticFiles(directory="library"), name="library")
+app.mount("/themes", StaticFiles(directory="themes"), name="themes")
 
 @app.get("/launcher")
 async def read_launcher():

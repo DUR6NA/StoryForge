@@ -85,8 +85,24 @@ class GameParser:
         
         processed_text = text
         
+        # First, convert simplified control flow syntax to Jinja syntax
+        # {{ if ... }} -> {% if ... %}
+        # {{ else }} -> {% else %}
+        # {{ endif }} -> {% endif %}
+        # {{ elif ... }} -> {% elif ... %}
+        processed_text = re.sub(r'\{\{\s*if\s+(.+?)\s*\}\}', r'{% if \1 %}', processed_text)
+        processed_text = re.sub(r'\{\{\s*elif\s+(.+?)\s*\}\}', r'{% elif \1 %}', processed_text)
+        processed_text = re.sub(r'\{\{\s*else\s*\}\}', r'{% else %}', processed_text)
+        processed_text = re.sub(r'\{\{\s*endif\s*\}\}', r'{% endif %}', processed_text)
+        
+        # Also support for loops
+        # {{ for item in items }} -> {% for item in items %}
+        # {{ endfor }} -> {% endfor %}
+        processed_text = re.sub(r'\{\{\s*for\s+(.+?)\s*\}\}', r'{% for \1 %}', processed_text)
+        processed_text = re.sub(r'\{\{\s*endfor\s*\}\}', r'{% endfor %}', processed_text)
+        
         # Find all {{ ... }} blocks
-        matches = re.finditer(r'\{\{(.*?)\}\}', text)
+        matches = re.finditer(r'\{\{(.*?)\}\}', processed_text)
         offset = 0
         for m in matches:
             raw_content = m.group(1).strip()

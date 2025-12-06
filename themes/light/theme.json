@@ -1,0 +1,96 @@
+{
+    "meta": {
+        "id": "light",
+        "name": "Crystal Light",
+        "author": "StoryForge",
+        "version": "1.0.0",
+        "description": "A clean, bright theme for daytime reading",
+        "preview": null,
+        "isBuiltIn": true
+    },
+    "colors": {
+        "primary": "#6366f1",
+        "secondary": "#ec4899",
+        "accent": "#8b5cf6",
+        "background": "#f8fafc",
+        "surface": "#ffffff",
+        "surfaceAlt": "#f1f5f9",
+        "border": "#e2e8f0",
+        "text": "#1e293b",
+        "textMuted": "#64748b",
+        "textDim": "#94a3b8",
+        "success": "#22c55e",
+        "warning": "#f59e0b",
+        "error": "#ef4444",
+        "info": "#3b82f6"
+    },
+    "buttons": {
+        "primary": {
+            "background": "#6366f1",
+            "text": "#ffffff",
+            "border": "transparent",
+            "hoverBackground": "#4f46e5",
+            "hoverText": "#ffffff",
+            "activeBackground": "#4338ca"
+        },
+        "secondary": {
+            "background": "transparent",
+            "text": "#64748b",
+            "border": "#e2e8f0",
+            "hoverBackground": "#f1f5f9",
+            "hoverText": "#1e293b",
+            "activeBackground": "#e2e8f0"
+        }
+    },
+    "sidebar": {
+        "background": "#ffffff",
+        "itemBackground": "transparent",
+        "itemBackgroundActive": "rgba(99, 102, 241, 0.1)",
+        "itemText": "#64748b",
+        "itemTextActive": "#6366f1",
+        "borderColor": "#e2e8f0"
+    },
+    "cards": {
+        "background": "#ffffff",
+        "border": "#e2e8f0",
+        "hoverBorder": "rgba(99, 102, 241, 0.5)",
+        "shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+    },
+    "inputs": {
+        "background": "#f1f5f9",
+        "border": "#e2e8f0",
+        "focusBorder": "#6366f1",
+        "text": "#1e293b",
+        "placeholder": "#94a3b8"
+    },
+    "scrollbar": {
+        "track": "#f1f5f9",
+        "thumb": "#cbd5e1",
+        "thumbHover": "#94a3b8"
+    },
+    "background": {
+        "type": "solid",
+        "value": "#f8fafc",
+        "overlay": null
+    },
+    "effects": {
+        "blur": true,
+        "glassmorphism": true,
+        "animations": true,
+        "shadows": true
+    },
+    "sounds": {
+        "enabled": true,
+        "buttonClick": null,
+        "buttonHover": null,
+        "navigation": null,
+        "notification": null,
+        "backgroundMusic": null,
+        "volume": 0.5
+    },
+    "fonts": {
+        "primary": "Inter, system-ui, sans-serif",
+        "heading": "Inter, system-ui, sans-serif",
+        "mono": "ui-monospace, Consolas, monospace"
+    }
+}
