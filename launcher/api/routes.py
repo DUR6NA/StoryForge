@@ -4,12 +4,16 @@ import toml
 from typing import List, Optional, Dict
 from pydantic import BaseModel
 from engine.renderer.game_loop import GameEngine
+from engine.mods.manager import ModManager
+from fastapi import UploadFile, File
+import shutil
 
 router = APIRouter()
 
 # Global store for active game sessions
 # game_id -> GameEngine instance
 ACTIVE_SESSIONS: Dict[str, GameEngine] = {}
+MOD_MANAGER = ModManager()
 
 class GameMetadata(BaseModel):
     id: str
@@ -181,3 +185,53 @@ async def delete_save(game_id: str, slot: str):
         return {"status": "ok"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class ModTogglePayload(BaseModel):
+    enabled: bool
+
+class ModPriorityPayload(BaseModel):
+    priority: int
+
+@router.get("/mods")
+async def get_mods():
+    MOD_MANAGER.discover_mods() # Refresh
+    return MOD_MANAGER.get_all_mods()
+
+@router.post("/mods/{mod_id}/toggle")
+async def toggle_mod(mod_id: str, payload: ModTogglePayload):
+    if MOD_MANAGER.toggle_mod(mod_id, payload.enabled):
+        return {"status": "ok"}
+    raise HTTPException(status_code=404, detail="Mod not found")
+
+@router.post("/mods/{mod_id}/priority")
+async def set_mod_priority(mod_id: str, payload: ModPriorityPayload):
+    if MOD_MANAGER.set_priority(mod_id, payload.priority):
+        return {"status": "ok"}
+    raise HTTPException(status_code=404, detail="Mod not found")
+
+@router.delete("/mods/{mod_id}")
+async def delete_mod(mod_id: str):
+    if MOD_MANAGER.delete_mod(mod_id):
+        return {"status": "ok"}
+    raise HTTPException(status_code=404, detail="Mod not found")
+
+@router.post("/mods/upload")
+async def upload_mod(file: UploadFile = File(...)):
+    # Save temp file
+    temp_path = f"temp_{file.filename}"
+    try:
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        # Install
+        if MOD_MANAGER.install_mod_from_zip(temp_path):
+            os.remove(temp_path)
+            return {"status": "ok"}
+        else:
+            os.remove(temp_path)
+            raise HTTPException(status_code=400, detail="Failed to install mod")
+    except Exception as e:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        raise HTTPException(status_code=500, detail=str(e))
+

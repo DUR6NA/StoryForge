@@ -11,8 +11,25 @@ class GameEngine:
         self.game_id = os.path.basename(game_path)
         self.world = World(game_path)
         self.state = GameState()
+        self.state = GameState()
         self.parser = GameParser(self.state)
+        self.functions = {}
         
+        # Load Mod Scripts
+        context = {
+            "engine": self,
+            "world": self.world,
+            "state": self.state,
+            "register_function": self.register_function
+        }
+        # Access mod_manager from world since it's initialized there
+        if hasattr(self.world, 'mod_manager'):
+            self.world.mod_manager.load_active_mod_scripts(context)
+        
+    def register_function(self, name, callback):
+        """Register a custom function for mods to use."""
+        self.functions[name] = callback
+
     def get_save_path(self, slot: str = "default") -> str:
         """Get the path to a save file for this game."""
         saves_dir = "saves"
@@ -158,5 +175,19 @@ class GameEngine:
         elif action_type == "function":
             # Execute function
             # payload might be "give_gold 10"
-            pass
+            if not payload:
+                return {"status": "error", "message": "No function specified"}
+                
+            parts = str(payload).split(" ")
+            func_name = parts[0]
+            args = parts[1:]
+            
+            if func_name in self.functions:
+                try:
+                    result = self.functions[func_name](*args)
+                    return {"status": "ok", "result": result}
+                except Exception as e:
+                    return {"status": "error", "message": f"Function error: {str(e)}"}
+            else:
+                 return {"status": "error", "message": f"Unknown function: {func_name}"}
         return {"status": "error", "message": "Unknown action"}
