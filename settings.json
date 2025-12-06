@@ -1,8 +1,0 @@
-{
-  "renderer": "edgechromium",
-  "selected_gpu": 2,
-  "enable_hardware_acceleration": true,
-  "prefer_discrete_gpu": true,
-  "vsync": true,
-  "max_fps": 60
-}
