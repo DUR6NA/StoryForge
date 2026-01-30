@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryForge Launcher</title>
+    <link rel="stylesheet" href="style.css">
+    <link id="theme-stylesheet" rel="stylesheet" href="../themes/forge/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="graph-editor.js" defer></script>
+    <script src="dialogue-editor.js" defer></script>
+</head>
+
+<body>
+    <div id="app-background"></div>
+    <canvas id="theme-canvas"
+        style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; pointer-events:none; display:none;"></canvas>
+    <div class="sidebar">
+        <div class="logo">StoryForge</div>
+        <div class="nav-item active" onclick="switchTab('library')">
+            <span>Library</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('mods')">
+            <span>Mods</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('editor')">
+            <span>Editor</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('settings')">
+            <span>Settings</span>
+        </div>
+        <div style="flex:1"></div>
+
+    </div>
+
+    <main class="content">
+        <header class="top-bar">
+            <div class="page-title" id="page-title">Library</div>
+            <div class="user-controls">
+                <button onclick="switchTab('editor'); promptNewProject()">New Project</button>
+                <button>Import</button>
+            </div>
+        </header>
+
+        <!-- Views -->
+        <div id="view-library" class="view-section">
+            <div id="game-grid" class="game-grid">
+                <!-- New Project Card -->
+                <div class="game-card create-card"
+                    onclick="window.electronAPI.launchGame(null, localStorage.getItem('sf-theme') || 'theme-forge', localStorage.getItem('sf-glass-enabled') === 'true')">
+                    <div class="plus-icon">+</div>
+                    <div>Create New Story</div>
+                </div>
+
+                <!-- Example Game Card -->
+                <div class="game-card" onclick="window.electronAPI.launchGame('demo')">
+                    <div class="card-image"
+                        style="background:var(--bg-tertiary); display:flex; align-items:center; justify-content:center;">
+                        <span style="font-size:40px; color:var(--text-secondary);">🎮</span>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">The Awakening</div>
+                        <div class="card-meta">Last played: Just now</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-mods" class="view-section hidden">
+            <div style="padding: 30px;">
+                <h2>Installed Mods</h2>
+                <div class="mod-list">
+                    <div class="mod-item">
+                        <input type="checkbox" checked>
+                        <div class="mod-info">
+                            <div class="mod-name">Better Textures Pack</div>
+                            <div class="mod-author">by Modder123</div>
+                        </div>
+                    </div>
+                    <div class="mod-item">
+                        <input type="checkbox">
+                        <div class="mod-info">
+                            <div class="mod-name">Infinite Money Cheat</div>
+                            <div class="mod-author">by CheaterMcCheat</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-editor" class="view-section hidden" style="flex-direction: column;">
+
+            <!-- 1. Project Selector -->
+            <div id="editor-project-selector" style="padding:30px; flex:1; overflow-y:auto;">
+                <h2>Select a Project to Edit</h2>
+                <div id="editor-project-list" class="game-grid">
+                    <!-- Create Card -->
+                    <div class="game-card create-card" onclick="promptNewProject()">
+                        <div class="plus-icon">+</div>
+                        <div>New Project</div>
+                    </div>
+                    <!-- Projects will be injected here via JS -->
+                </div>
+            </div>
+
+            <!-- 2. Editor Workspace (Initially Hidden) -->
+            <div id="editor-workspace" class="hidden" style="display:flex; flex:1; height:100%; overflow:hidden;">
+                <div class="editor-sidebar">
+                    <div class="editor-nav-item active" onclick="switchEditorTab('info')">Info & Tutorial</div>
+                    <div class="editor-nav-item" onclick="switchEditorTab('locations')">Locations</div>
+                    <div class="editor-nav-item" onclick="switchEditorTab('characters')">Characters</div>
+                    <div class="editor-nav-item" onclick="switchEditorTab('dialogues')">Dialogues</div>
+                    <div class="editor-nav-item" onclick="switchEditorTab('player')">Player</div>
+                    <div class="editor-nav-item" onclick="switchEditorTab('paperdolls')">Paperdolls</div>
+                    <div class="editor-nav-item" onclick="switchEditorTab('items')">Items & Quests</div>
+                    <div class="editor-nav-item" onclick="switchEditorTab('vars')">Variables</div>
+                    <div class="editor-nav-item" onclick="switchEditorTab('economy')">Economy</div>
+                    <div class="editor-nav-item" onclick="switchEditorTab('walkthrough')">Walkthrough</div>
+                    <div class="editor-nav-item" onclick="switchEditorTab('settings')">Settings</div>
+                    <div style="flex:1"></div>
+                    <div class="editor-nav-item" style="border-top:1px solid var(--border-color);"
+                        onclick="closeProject()">← Close Project</div>
+                </div>
+
+                <div class="editor-content">
+                    <!-- Sub-Views -->
+
+                    <!-- INFO TAB -->
+                    <div id="editor-view-info" class="editor-subview" style="padding-right: 20px;">
+                        <div style="max-width: 800px; padding-bottom: 50px; line-height: 1.6;">
+                            <h1 style="color: var(--accent-color); margin-bottom: 20px;">StoryForge Editor Guide</h1>
+                            <p style="font-size: 1.1em; margin-bottom: 30px;">
+                                Welcome to StoryForge! This tool puts you in control of an open-ended simulation world.
+                                Below is a guide to everything you can currently build and customize.
+                            </p>
+
+                            <hr style="border-color: var(--border-color); opacity: 0.3; margin: 30px 0;">
+
+                            <h2 style="color: var(--text-primary); margin-top: 30px;">1. Locations & World Building</h2>
+                            <p><strong>Locations</strong> are the heart of your game. They replace the traditional
+                                "Scene"
+                                concept. A Location represents a discrete place (e.g., "Tavern", "Forest Path") where
+                                the player sits.</p>
+                            <ul style="margin-left: 20px; color: var(--text-secondary); margin-bottom: 20px;">
+                                <li style="margin-bottom: 15px;"><strong>Dynamic Backgrounds:</strong> You can set
+                                    different images for different times of day using the JSON format:<br>
+                                    <code
+                                        style="display:block; background: var(--bg-secondary); padding: 8px; border-radius: 4px; margin-top: 5px; font-family: monospace;">{
+    "default": "assets/locs/forest_day.jpg",
+    "night": "assets/locs/forest_night.jpg",
+    "dawn": "assets/locs/forest_dawn.jpg"
+}</code>
+                                </li>
+                                <li style="margin-bottom: 10px;"><strong>Text:</strong> The main narrative description.
+                                    This can be static or change based on game events (advanced).</li>
+                                <li><strong>Choices:</strong> The primary way users interact. Use the <strong>+ Add
+                                        Choice</strong> button to use the Visual Choice Editor.</li>
+                            </ul>
+
+                            <h2 style="color: var(--text-primary); margin-top: 30px;">2. Visual Choice Editor & Actions
+                            </h2>
+                            <p>StoryForge features a "No-Code" visual editor for choices. When creating a choice, you
+                                can select an <strong>Action Template</strong>:</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                                <div style="background: var(--bg-secondary); padding: 15px; border-radius: 6px;">
+                                    <strong style="color: var(--text-primary);">Navigate</strong><br><span
+                                        style="font-size: 0.9em; opacity: 0.8;">Move the player to another Location
+                                        ID.</span>
+                                </div>
+                                <div style="background: var(--bg-secondary); padding: 15px; border-radius: 6px;">
+                                    <strong style="color: var(--text-primary);">Acquire Item</strong><br><span
+                                        style="font-size: 0.9em; opacity: 0.8;">Grant the player an item (and
+                                        Qty).</span>
+                                </div>
+                                <div style="background: var(--bg-secondary); padding: 15px; border-radius: 6px;">
+                                    <strong style="color: var(--text-primary);">NPC Interact</strong><br><span
+                                        style="font-size: 0.9em; opacity: 0.8;">Launch the full Character Interaction
+                                        Modal.</span>
+                                </div>
+                                <div style="background: var(--bg-secondary); padding: 15px; border-radius: 6px;">
+                                    <strong style="color: var(--text-primary);">Modify Stats/Rel</strong><br><span
+                                        style="font-size: 0.9em; opacity: 0.8;">Change player stats or NPC relationship
+                                        values.</span>
+                                </div>
+                            </div>
+                            <p><strong>Conditions:</strong> You can hide choices unless specific criteria are met.
+                                Examples:
+                                <br><code style="color: var(--accent-color);">stats.strength > 5</code>
+                                <br><code style="color: var(--accent-color);">variables.found_key == true</code>
+                            </p>
+
+                            <h2 style="color: var(--text-primary); margin-top: 30px;">3. Characters (NPCs)</h2>
+                            <p>Create living, breathing characters with their own lives.</p>
+                            <ul style="margin-left: 20px; color: var(--text-secondary); margin-bottom: 20px;">
+                                <li style="margin-bottom: 10px;"><strong>Schedules:</strong> Define where NPCs are at
+                                    specific hours (0-23). If no schedule is met, they stay at their default/last
+                                    location.</li>
+                                <li style="margin-bottom: 10px;"><strong>Dialogue Trees:</strong> Create branching
+                                    conversations. Use "Nodes" to create deep interaction flows.</li>
+                                <li><strong>Shops:</strong> Toggle the "Is Merchant?" box and provide a comma-separated
+                                    list of Item IDs to turn any NPC into a vendor.</li>
+                            </ul>
+
+                            <h2 style="color: var(--text-primary); margin-top: 30px;">4. Items & Variables</h2>
+                            <ul style="margin-left: 20px; color: var(--text-secondary);">
+                                <li style="margin-bottom: 10px;"><strong>Items:</strong> Create Quest Items,
+                                    Consumables, or Equipment. Use the JSON Effects field for logic (e.g. <code>{"heal":
+                                        20}</code>).</li>
+                                <li style="margin-bottom: 10px;"><strong>Global Variables:</strong> Use the Variables
+                                    tab to create boolean or number flags (e.g., <code>is_ghost_mode</code>) to track
+                                    story progress across the entire game.</li>
+                                <li><strong>Theming:</strong> In the Settings tab, you can use the <strong>Theme
+                                        Builder</strong> to live-edit colors, or enable "Liquid Glass" mode for a
+                                    modern, transparent aesthetic.</li>
+                            </ul>
+
+                            <div
+                                style="margin-top: 40px; padding: 20px; background: rgba(10, 132, 255, 0.1); border-left: 4px solid var(--accent-color); border-radius: 4px;">
+                                <h3 style="margin-top: 0; color: var(--accent-color);">Assets & File Paths</h3>
+                                <p style="margin-bottom: 0;">
+                                    All image paths are <strong>relative</strong> to your specific project folder.
+                                    <br>Example: If you have a project named "MyRPG", put images in
+                                    <code>MyRPG/assets/</code> and reference them as <code>assets/my_image.jpg</code>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- LOCATIONS TAB -->
+                    <div id="editor-view-locations" class="editor-subview hidden" style="flex-direction:column;">
+                        <div class="editor-toolbar" style="justify-content:space-between;">
+                            <div>
+                                <button class="primary-btn" onclick="addNewLocation()">+ New Location</button>
+                            </div>
+                            <div>
+                                <button class="secondary-btn" id="btn-loc-view-toggle"
+                                    onclick="toggleLocationViewMode()">Graph View</button>
+                            </div>
+                        </div>
+
+                        <!-- LIST / FORM VIEW -->
+                        <div id="loc-view-list" style="display:flex; flex:1; overflow:hidden;">
+                            <div class="scene-list" id="location-list-container"
+                                style="width:250px; overflow-y:auto; border-right:1px solid var(--border-color); padding-right:10px;">
+                                <!-- List -->
+                            </div>
+                            <div id="location-editor-form" style="flex:1; padding-left:20px; overflow-y:auto;">
+                                <h3>Edit Location</h3>
+                                <div class="setting-row">
+                                    <label>Location ID</label>
+                                    <input type="text" id="loc-id"
+                                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Display Name</label>
+                                    <input type="text" id="loc-name"
+                                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Text Content</label>
+                                    <textarea id="loc-text" rows="5"
+                                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;"></textarea>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Images (JSON: { "day": "...", "night": "..."})</label>
+                                    <textarea id="loc-images" rows="3"
+                                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px; font-family:monospace;">{}</textarea>
+                                </div>
+
+                                <div class="setting-row">
+                                    <label>Choices</label>
+                                    <div id="visual-choices-list"
+                                        style="margin-bottom:10px; display:flex; flex-direction:column; gap:5px;">
+                                        <!-- Visual choice items will be injected here -->
+                                    </div>
+                                    <button class="secondary-btn" onclick="openChoiceEditor()">+ Add Outcome</button>
+                                </div>
+
+                                <div class="setting-row"
+                                    style="margin-top:20px; border-top:1px solid var(--border-color); padding-top:10px;">
+                                    <label>Raw JSON (Advanced - Choices)</label>
+                                    <textarea id="scene-choices" rows="5"
+                                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px; font-family:monospace;"
+                                        oninput="parseChoicesFromJSON()">[]</textarea>
+                                </div>
+
+                                <div style="display:flex; gap:10px; margin-top:20px;">
+                                    <button class="primary-btn" onclick="saveCurrentLocation()" style="flex:1;">Update
+                                        Location</button>
+                                    <button class="secondary-btn" onclick="deleteActiveLocation()"
+                                        style="color:red; border-color:red;" title="Delete this location">🗑
+                                        Delete</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GRAPH VIEW -->
+                        <div id="loc-view-graph" class="hidden"
+                            style="flex:1; position:relative; overflow:hidden; background:#121212;">
+                            <canvas id="loc-graph-canvas"
+                                style="width:100%; height:100%; display:block; outline:none;"></canvas>
+                            <div
+                                style="position:absolute; top:20px; left:20px; pointer-events:none; background:rgba(0,0,0,0.6); padding:10px; border-radius:8px; color:#ccc; font-size:12px;">
+                                <strong>Graph Controls</strong><br>
+                                Double-click: Add Node / Edit Node<br>
+                                Drag: Move Node<br>
+                                Wheel: Zoom<br>
+                                🗑 Button: Delete Node
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CHARACTERS TAB -->
+                    <div id="editor-view-characters" class="editor-subview hidden">
+                        <div class="editor-toolbar">
+                            <button class="primary-btn" onclick="addNewCharacter()">+ New Character</button>
+                        </div>
+                        <div style="display:flex; height:100%; overflow:hidden;">
+                            <div class="scene-list" id="character-list-container"
+                                style="width:250px; overflow-y:auto; border-right:1px solid var(--border-color); padding-right:10px;">
+                                <!-- List -->
+                            </div>
+                            <div id="character-editor-form" style="flex:1; padding-left:20px; overflow-y:auto;">
+                                <h3>Edit Character</h3>
+
+                                <details open>
+                                    <summary class="section-header">Identity</summary>
+                                    <div class="setting-row">
+                                        <label>Character ID</label>
+                                        <input type="text" id="char-id" class="input-dark">
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Appearance Type</label>
+                                        <select id="char-appearance-type" class="input-dark"
+                                            onchange="toggleCharAppearanceMode()">
+                                            <option value="image">Premade Image</option>
+                                            <option value="paperdoll">Custom Character (Paperdoll)</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting-row" id="char-image-row">
+                                        <label>Image Path (Relative)</label>
+                                        <div style="display:flex; gap:10px;">
+                                            <input type="text" id="char-image-path" class="input-dark"
+                                                placeholder="assets/chars/npc.png">
+                                            <button class="secondary-btn" onclick="uploadCharImage()">Up</button>
+                                        </div>
+                                    </div>
+                                    <div class="setting-row hidden" id="char-paperdoll-row">
+                                        <label>Select Paperdoll</label>
+                                        <select id="char-paperdoll-select" class="input-dark">
+                                            <option value="">-- Select --</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Name</label>
+                                        <input type="text" id="char-name" class="input-dark">
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Description</label>
+                                        <textarea id="char-description" rows="3" class="input-dark"></textarea>
+                                    </div>
+                                </details>
+
+                                <details>
+                                    <summary class="section-header">Stats & Attributes</summary>
+                                    <div id="char-stats-container" class="dynamic-list"></div>
+                                    <button class="secondary-btn" onclick="addCharStatRow()">+ Add Stat</button>
+                                </details>
+
+                                <details>
+                                    <summary class="section-header">Schedule</summary>
+                                    <p style="font-size:0.8em; opacity:0.7;">Define where this NPC moves at specific
+                                        times.</p>
+                                    <div id="char-schedule-container" class="dynamic-list"></div>
+                                    <button class="secondary-btn" onclick="addCharScheduleRow()">+ Add Schedule
+                                        Event</button>
+                                </details>
+
+                                <details>
+                                    <summary class="section-header">Interactions</summary>
+                                    <p style="font-size:0.8em; opacity:0.7;">Define NPC interactions. Each interaction
+                                        can trigger outcomes like navigation, items, stats, and more - just like
+                                        Location Choices.</p>
+                                    <div id="char-dialogue-list" class="dynamic-list"></div>
+                                    <button class="secondary-btn" onclick="addCharDialogueNode()">+ Add Dialogue
+                                        Node</button>
+                                </details>
+
+                                <details>
+                                    <summary class="section-header">Shop & Services</summary>
+                                    <div class="setting-row" style="flex-direction:row; align-items:center;">
+                                        <input type="checkbox" id="char-is-shop" style="margin-right:10px;">
+                                        <label for="char-is-shop">Is Merchant?</label>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Accepts Currency</label>
+                                        <select id="char-shop-currency" class="input-dark"
+                                            onmouseenter="updateShopCurrencyDropdown()">
+                                            <option value="default">(Default) $</option>
+                                        </select>
+                                        <button class="secondary-btn"
+                                            style="padding:2px 8px; font-size:0.8em; margin-top:5px;"
+                                            onclick="updateShopCurrencyDropdown()">↻ Refresh Currencies</button>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Shop Inventory</label>
+                                        <div id="char-shop-items-container"
+                                            style="display:flex; flex-direction:column; gap:10px; margin-bottom:10px;">
+                                            <!-- Dynamic Rows -->
+                                        </div>
+                                        <button class="secondary-btn" onclick="addShopItemRow()">+ Add Shop
+                                            Item</button>
+                                        <p style="font-size:0.8em; opacity:0.7; margin-top:5px;">
+                                            Set Stock to -1 for Infinite. Condition is a JS expression (e.g.
+                                            <code>global.flag == true</code>).
+                                        </p>
+                                    </div>
+                                </details>
+
+                                <details>
+                                    <summary class="section-header">Conditions</summary>
+                                    <div class="setting-row">
+                                        <label>Visibility Condition (JS Expression)</label>
+                                        <input type="text" id="char-visibility" class="input-dark"
+                                            placeholder="global.day > 1">
+                                    </div>
+                                </details>
+
+                                <div
+                                    style="margin-top:20px; border-top:1px solid var(--border-color); padding-top:20px;">
+                                    <button class="primary-btn" onclick="saveCurrentCharacter()">Update
+                                        Character</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- DIALOGUES TAB -->
+                    <div id="editor-view-dialogues" class="editor-subview hidden" style="flex-direction:column;">
+                        <div class="editor-toolbar" style="justify-content:space-between;">
+                            <div>
+                                <button class="primary-btn" onclick="addNewDialogueTree()">+ New Dialogue Tree</button>
+                            </div>
+                            <div>
+                                <button class="secondary-btn" id="btn-diag-view-toggle"
+                                    onclick="toggleDialogueViewMode()">Graph View</button>
+                            </div>
+                        </div>
+
+                        <!-- LIST / FORM VIEW -->
+                        <div id="diag-view-list" style="display:flex; flex:1; overflow:hidden;">
+                            <div class="scene-list" id="dialogue-list-container"
+                                style="width:250px; overflow-y:auto; border-right:1px solid var(--border-color); padding-right:10px;">
+                                <!-- List -->
+                            </div>
+                            <div id="dialogue-editor-form" style="flex:1; padding-left:20px; overflow-y:auto;">
+                                <h3>Edit Dialogue Tree</h3>
+                                <div class="setting-row">
+                                    <label>Tree ID</label>
+                                    <input type="text" id="diag-id" class="input-dark">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Participants (NPC IDs, comma separated)</label>
+                                    <input type="text" id="diag-participants" class="input-dark"
+                                        placeholder="npc_1, npc_2">
+                                </div>
+
+                                <div class="setting-row">
+                                    <label>Root Node (Starting Point)</label>
+                                    <div id="diag-root-node-preview"
+                                        style="padding:10px; background:var(--bg-tertiary); border-radius:4px;">
+                                        No root node set. Switch to Graph View to create one.
+                                    </div>
+                                </div>
+
+                                <div style="display:flex; gap:10px; margin-top:20px;">
+                                    <button class="primary-btn" onclick="saveCurrentDialogueTree()"
+                                        style="flex:1;">Update Tree</button>
+                                    <button class="secondary-btn" onclick="deleteActiveDialogueTree()"
+                                        style="color:red; border-color:red;">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GRAPH VIEW -->
+                        <div id="diag-view-graph" class="hidden"
+                            style="flex:1; position:relative; overflow:hidden; background:#121212;">
+                            <canvas id="diag-graph-canvas"
+                                style="width:100%; height:100%; display:block; outline:none;"></canvas>
+                            <div
+                                style="position:absolute; top:20px; left:20px; pointer-events:none; background:rgba(0,0,0,0.6); padding:10px; border-radius:8px; color:#ccc; font-size:12px;">
+                                <strong>Dialogue Graph Controls</strong><br>
+                                Double-click: Add Node / Edit Node<br>
+                                Drag: Move Node<br>
+                                Wheel: Zoom<br>
+                                🗑 Button: Delete Node
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PLAYER TAB -->
+                    <div id="editor-view-player" class="editor-subview hidden">
+                        <div style="padding-right: 20px; max-width: 800px;">
+                            <h2 style="color: var(--accent-color);">Player Configuration</h2>
+                            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                                Configure the player character, starting stats, and the character creation screen.
+                            </p>
+
+                            <div class="setting-row">
+                                <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                                    <span>Enable Character Creation Screen</span>
+                                    <input type="checkbox" id="player-enable-creation" onchange="savePlayerConfig()"
+                                        style="width:auto; margin:0;">
+                                </label>
+                                <p style="font-size:0.8em; color:var(--text-secondary); margin-top:5px;">
+                                    If enabled, a character creation screen will appear after clicking "New Game".
+                                </p>
+                            </div>
+
+                            <hr style="border-color: var(--border-color); opacity: 0.3; margin: 30px 0;">
+
+                            <h3>Player Attributes & Stats</h3>
+                            <p style="font-size:0.8em; opacity:0.7; margin-bottom:10px;">
+                                Define variables that define the player (e.g., strength, intelligence, age). These can
+                                be modified in the creation screen.
+                            </p>
+                            <div id="player-stats-list" class="dynamic-list" style="margin-bottom:10px;">
+                                <!-- Valid Stats Injected Here -->
+                            </div>
+                            <button class="secondary-btn" onclick="addPlayerStat()">+ Add Attribute</button>
+
+                            <hr style="border-color: var(--border-color); opacity: 0.3; margin: 30px 0;">
+
+                            <h3>Visual Representation</h3>
+                            <div class="setting-row">
+                                <label>Representation Type</label>
+                                <select id="player-visual-type" class="input-dark"
+                                    onchange="togglePlayerVisualSettings(); savePlayerConfig();">
+                                    <option value="none">None (Text Only)</option>
+                                    <option value="image">Static Image</option>
+                                    <option value="paperdoll">Paperdoll (Dynamic)</option>
+                                </select>
+                            </div>
+
+                            <div id="player-visual-image-settings" class="hidden">
+                                <div class="setting-row">
+                                    <label>Default Image Path</label>
+                                    <div style="display:flex; gap:10px;">
+                                        <input type="text" id="player-default-image" class="input-dark"
+                                            placeholder="assets/player/default.png" onchange="savePlayerConfig()">
+                                        <button class="secondary-btn" onclick="uploadPlayerImage()">Upload</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="player-visual-paperdoll-settings" class="hidden">
+                                <div class="setting-row">
+                                    <label>Paperdoll Definition</label>
+                                    <select id="player-paperdoll-select" class="input-dark"
+                                        onchange="savePlayerConfig()">
+                                        <option value="">-- Select a Paperdoll --</option>
+                                    </select>
+                                    <p style="font-size:0.8em; opacity:0.7;">Create paperdolls in the "Paperdolls" tab
+                                        first.</p>
+                                </div>
+                            </div>
+
+                            <hr style="border-color: var(--border-color); opacity: 0.3; margin: 30px 0;">
+
+                            <h3>Creation Screen Content</h3>
+                            <div class="setting-row">
+                                <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                                    <input type="checkbox" id="creation-show-identity" onchange="savePlayerConfig()"
+                                        style="width:auto; margin:0;" checked>
+                                    <span>Show Identity Tab (Name, Pronouns, etc.)</span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                                    <input type="checkbox" id="creation-show-appearance" onchange="savePlayerConfig()"
+                                        style="width:auto; margin:0;" checked>
+                                    <span>Show Appearance Tab</span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                                    <input type="checkbox" id="creation-show-stats" onchange="savePlayerConfig()"
+                                        style="width:auto; margin:0;" checked>
+                                    <span>Show Stats Assignment Tab</span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <label>Starting Stat Points</label>
+                                <input type="number" id="creation-stat-points" class="input-dark" value="10"
+                                    onchange="savePlayerConfig()">
+                            </div>
+                            <div class="setting-row">
+                                <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                                    <input type="checkbox" id="creation-show-cheats" onchange="savePlayerConfig()"
+                                        style="width:auto; margin:0;">
+                                    <span>Show Cheats / Rules Tab</span>
+                                </label>
+                            </div>
+
+                            <div style="margin-top: 20px;">
+                                <button class="primary-btn" onclick="savePlayerConfig()">Save Player
+                                    Configuration</button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- PAPERDOLLS TAB -->
+                    <div id="editor-view-paperdolls" class="editor-subview hidden">
+                        <div class="editor-toolbar">
+                            <button class="primary-btn" onclick="addNewPaperdoll()">+ New Paperdoll</button>
+                        </div>
+                        <div style="display:flex; height:100%; overflow:hidden;">
+                            <!-- List -->
+                            <div class="scene-list" id="paperdoll-list-container"
+                                style="width:250px; overflow-y:auto; border-right:1px solid var(--border-color); padding-right:10px;">
+                            </div>
+
+                            <!-- Editor -->
+                            <div id="paperdoll-editor-form"
+                                style="flex:1; padding-left:20px; display:flex; gap:20px; overflow:hidden;">
+                                <!-- Left: Config -->
+                                <div
+                                    style="flex:1; display:flex; flex-direction:column; overflow-y:auto; padding-right:10px;">
+                                    <h3>Edit Paperdoll</h3>
+                                    <div class="setting-row">
+                                        <label>Paperdoll Name</label>
+                                        <input type="text" id="pd-name" class="input-dark"
+                                            onchange="updatePaperdollName(this.value)">
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Paperdoll ID</label>
+                                        <input type="text" id="pd-id" class="input-dark"
+                                            onchange="updatePaperdollId(this.value)">
+                                    </div>
+
+                                    <div style="flex:1; display:flex; flex-direction:column; margin-top:20px;">
+                                        <label style="display:flex; justify-content:space-between; align-items:center;">
+                                            <span>Layers (Z-Index Order: Top ➔ Bottom)</span>
+                                            <button class="secondary-btn" onclick="addPaperdollLayer()">+ Layer</button>
+                                        </label>
+                                        <div id="pd-layer-list"
+                                            style="flex:1; border:1px solid var(--border-color); overflow-y:auto; margin-top:10px; padding:5px;">
+                                            <!-- Layers injected here -->
+                                        </div>
+                                    </div>
+
+                                    <div id="pd-layer-controls" class="hidden"
+                                        style="margin-top:20px; border-top:1px solid var(--border-color); padding-top:20px;">
+                                        <h4>Selected Layer: <span id="pd-selected-layer-name">Body</span></h4>
+
+                                        <div class="setting-row">
+                                            <label>Layer Name</label>
+                                            <input type="text" id="pd-layer-name" class="input-dark"
+                                                onchange="updateSelectedLayerName(this.value)">
+                                        </div>
+
+                                        <div class="setting-row">
+                                            <label>Current Image</label>
+                                            <div style="display:flex; align-items:center; gap:10px;">
+                                                <button class="secondary-btn" onclick="cycleLayerImage(-1)">◀</button>
+                                                <span id="pd-layer-img-count" style="font-size:0.9em;">0/0</span>
+                                                <button class="secondary-btn" onclick="cycleLayerImage(1)">▶</button>
+                                                <button class="secondary-btn" onclick="uploadLayerImage()">Upload
+                                                    Img</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="setting-row">
+                                            <label>Colorway</label>
+                                            <div style="display:flex; align-items:center; gap:10px;">
+                                                <button class="secondary-btn" onclick="cycleLayerColor(-1)">◀</button>
+                                                <span id="pd-layer-color-count" style="font-size:0.9em;">Default</span>
+                                                <button class="secondary-btn" onclick="cycleLayerColor(1)">▶</button>
+                                                <button class="secondary-btn" onclick="uploadLayerColorway()">Upload
+                                                    Color</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="setting-row">
+                                            <label>Stats (JSON)</label>
+                                            <input type="text" id="pd-layer-stats" class="input-dark"
+                                                placeholder='{"defense": 5}' onchange="updateLayerStats(this.value)">
+                                        </div>
+
+                                        <div class="setting-row" style="margin-top:10px;">
+                                            <button class="secondary-btn" onclick="deleteSelectedLayer()"
+                                                style="color:red; border-color:red; width:100%;">Remove Layer</button>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-top:20px;">
+                                        <button class="primary-btn" onclick="saveCurrentPaperdoll()">Save
+                                            Paperdoll</button>
+                                    </div>
+                                </div>
+
+                                <!-- Right: Preview -->
+                                <div
+                                    style="width: 338px; background: #000; border: 1px solid var(--border-color); display:flex; flex-direction:column;">
+                                    <div style="padding:10px; text-align:center; background:var(--bg-tertiary);">Preview
+                                        (900x1600)</div>
+                                    <div id="pd-preview-container"
+                                        style="position:relative; width: 337.5px; height: 600px; background: #1a1a1a; overflow:hidden;">
+                                        <!-- Scaled Canvas or Divs -->
+                                        <!-- 900x1600 scaled to fit 337.5x600 (approx 0.375 scale) -->
+                                        <div id="pd-canvas"
+                                            style="position:absolute; top:0; left:0; width:900px; height:1600px; transform: scale(0.375); transform-origin: 0 0; background:rgba(255,255,255,0.05);">
+                                            <!-- Layers Rendered Here -->
+                                        </div>
+                                    </div>
+                                    <div style="padding:10px; font-size:0.8em; color:gray; text-align:center;">
+                                        Live Preview
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ECONOMY TAB -->
+                    <div id="editor-view-economy" class="editor-subview hidden">
+                        <div class="editor-toolbar">
+                            <button class="primary-btn" onclick="addNewCurrency()">+ New Currency</button>
+                        </div>
+                        <div style="display:flex; height:100%; overflow:hidden;">
+                            <div class="scene-list" id="currency-list-container"
+                                style="width:250px; overflow-y:auto; border-right:1px solid var(--border-color); padding-right:10px;">
+                                <!-- List -->
+                            </div>
+                            <div id="currency-editor-form" style="flex:1; padding-left:20px; overflow-y:auto;">
+                                <h3>Edit Currency</h3>
+                                <div class="setting-row">
+                                    <label>Currency ID</label>
+                                    <input type="text" id="curr-id" class="input-dark" placeholder="e.g. gold_coins">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Display Name</label>
+                                    <input type="text" id="curr-name" class="input-dark" placeholder="e.g. Gold Coins">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Symbol / Emoji</label>
+                                    <input type="text" id="curr-symbol" class="input-dark" placeholder="e.g. 🪙">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Description</label>
+                                    <textarea id="curr-desc" rows="3" class="input-dark"></textarea>
+                                </div>
+
+                                <button class="primary-btn" onclick="saveCurrentCurrency()">Update Currency</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ITEMS & QUESTS TAB -->
+                    <div id="editor-view-items" class="editor-subview hidden">
+                        <div class="editor-toolbar">
+                            <button class="primary-btn" onclick="addNewItem()">+ New Item</button>
+                        </div>
+                        <div style="display:flex; height:100%; overflow:hidden;">
+                            <div class="scene-list" id="item-list-container"
+                                style="width:250px; overflow-y:auto; border-right:1px solid var(--border-color); padding-right:10px;">
+                                <!-- List -->
+                            </div>
+                            <div id="item-editor-form" style="flex:1; padding-left:20px; overflow-y:auto;">
+                                <h3>Edit Item</h3>
+                                <div class="setting-row">
+                                    <label>Item ID</label>
+                                    <input type="text" id="item-id"
+                                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Name</label>
+                                    <input type="text" id="item-name"
+                                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Type</label>
+                                    <select id="item-type"
+                                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                                        <option value="item">Item</option>
+                                        <option value="quest_item">Quest Item</option>
+                                        <option value="consumable">Consumable</option>
+                                        <option value="equipment">Equipment</option>
+                                    </select>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Effects / Properties (JSON)</label>
+                                    <textarea id="item-effects" rows="5"
+                                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px; font-family:monospace;">{}</textarea>
+                                </div>
+                                <button class="primary-btn" onclick="saveCurrentItem()">Update Item</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SETTINGS TAB -->
+                    <div id="editor-view-settings" class="editor-subview hidden">
+                        <h3>Project Settings</h3>
+                        <div class="setting-row">
+                            <label>Start Menu Title</label>
+                            <input type="text" id="setting-title" class="input-dark" placeholder="StoryForge">
+                        </div>
+                        <div class="setting-row">
+                            <label>Start Menu Subtitle</label>
+                            <input type="text" id="setting-version" class="input-dark" placeholder="v1.0">
+                        </div>
+                        <div class="setting-row">
+                            <label>Menu Background Image</label>
+                            <input type="text" id="setting-bg" class="input-dark" placeholder="assets/menu_bg.jpg">
+                        </div>
+                        <div class="setting-row" style="margin-top:20px">
+                            <button class="primary-btn" onclick="saveProjectSettings()">Save Settings</button>
+                        </div>
+                    </div>
+
+                    <!-- WALKTHROUGH TAB -->
+                    <div id="editor-view-walkthrough" class="editor-subview hidden">
+                        <div class="editor-toolbar" style="justify-content:space-between;">
+                            <div>
+                                <button class="primary-btn" onclick="addWalkthroughChapter()">+ New Chapter</button>
+                            </div>
+                            <div>
+                                <button class="secondary-btn" onclick="saveWalkthrough()">Save Walkthrough</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; height:calc(100% - 60px); gap:20px; overflow:hidden;">
+                            <!-- Chapter List Sidebar -->
+                            <div
+                                style="width:220px; display:flex; flex-direction:column; border-right:1px solid var(--border-color); padding-right:15px;">
+                                <h4 style="margin:0 0 10px 0; color:var(--text-secondary);">Chapters</h4>
+                                <div id="walkthrough-chapter-editor-list"
+                                    style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:5px;">
+                                    <!-- Chapter items injected here -->
+                                </div>
+                            </div>
+
+                            <!-- Main Editor Area -->
+                            <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+                                <div id="walkthrough-editor-content"
+                                    style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+                                    <div style="text-align:center; color:var(--text-secondary); padding:40px;">
+                                        <p style="font-size:2em;">📖</p>
+                                        <p>Select a chapter to edit, or create a new one.</p>
+                                        <p style="font-size:0.9em; opacity:0.7;">Walkthroughs help players who get stuck
+                                            find their way through your game.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VARIABLES TAB -->
+                    <div id="editor-view-vars" class="editor-subview hidden">
+                        <div class="editor-toolbar">
+                            <button class="primary-btn" onclick="addNewVariable()">+ New Variable</button>
+                        </div>
+                        <h3>Global Variables</h3>
+                        <div id="vars-list-container" style="display:flex; flex-direction:column; gap:10px;">
+                            <!-- Variable rows injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-settings" class="view-section hidden">
+            <div style="padding: 30px;">
+                <h2>Settings</h2>
+                <div class="setting-row">
+                    <label>Master Volume</label>
+                    <input type="range" min="0" max="100" value="80">
+                </div>
+                <div class="setting-row">
+                    <label>Resolution</label>
+                    <select
+                        style="background: var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:5px;">
+                        <option>1920x1080</option>
+                        <option>1280x720</option>
+                    </select>
+                </div>
+
+                <h3>Appearance & Themes</h3>
+                <div class="setting-row">
+                    <label style="display:block; margin-bottom:10px;">Select Theme</label>
+                    <div id="theme-list" class="theme-grid">
+                        <!-- Theme Cards Injected Here via JS -->
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                        <span>Enable Liquid Glass Effects</span>
+                        <input type="checkbox" id="glass-toggle" onchange="toggleGlassMode(this.checked)"
+                            style="width:auto; margin:0;">
+                    </label>
+                    <p style="font-size:0.8em; color:var(--text-secondary); margin-top:0;">
+                        Makes UI panels semi-transparent and adds a blur effect. Works with all themes.
+                    </p>
+                </div>
+
+                <div class="setting-row"
+                    style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h3>Theme Builder</h3>
+                            <p style="color:var(--text-secondary); font-size:0.9em; margin-top:5px;">Design your own
+                                visual style live.</p>
+                        </div>
+                        <button class="secondary-btn" onclick="toggleThemeBuilder()">Open Creator</button>
+                    </div>
+
+                    <div id="theme-builder-panel" class="theme-builder-panel hidden">
+                        <div class="tb-control">
+                            <label>Theme Name</label>
+                            <input type="text" id="tb-name" class="input-dark" placeholder="My Cool Theme"
+                                value="My Custom Theme">
+                        </div>
+
+                        <div class="tb-grid">
+                            <div class="tb-control">
+                                <label>Background (Wallpaper)</label>
+                                <input type="color" id="tb-bg-primary" value="#121212" oninput="updateThemePreview()">
+                            </div>
+                            <div class="tb-control">
+                                <label>Panel Background</label>
+                                <input type="color" id="tb-bg-secondary" value="#1e1e1e" oninput="updateThemePreview()">
+                            </div>
+                            <div class="tb-control">
+                                <label>Primary Text</label>
+                                <input type="color" id="tb-text-primary" value="#ffffff" oninput="updateThemePreview()">
+                            </div>
+                            <div class="tb-control">
+                                <label>Accent Color</label>
+                                <input type="color" id="tb-accent-color" value="#0A84FF" oninput="updateThemePreview()">
+                            </div>
+                            <div class="tb-control">
+                                <label>Border / Outline Color</label>
+                                <input type="color" id="tb-border-color" value="#333333" oninput="updateThemePreview()">
+                            </div>
+                        </div>
+
+                        <div class="tb-grid" style="grid-template-columns: 1fr 1fr;">
+                            <div class="tb-control">
+                                <label>Font Family</label>
+                                <input type="text" id="tb-font-family" class="input-dark"
+                                    placeholder="Inter, sans-serif" oninput="updateThemePreview()">
+                            </div>
+                            <div class="tb-control">
+                                <label>Background Image</label>
+                                <div style="display:flex; gap:5px;">
+                                    <input type="text" id="tb-bg-image" class="input-dark"
+                                        placeholder="URL or select file..." oninput="updateThemePreview()">
+                                    <button class="secondary-btn" style="padding:0 10px;"
+                                        onclick="document.getElementById('tb-bg-file').click()">📂</button>
+                                </div>
+                                <input type="file" id="tb-bg-file" accept="image/*" style="display:none;"
+                                    onchange="handleBgFileSelect(this)">
+                            </div>
+                        </div>
+
+                        <div class="tb-grid" style="grid-template-columns: 1fr 1fr;">
+                            <div class="tb-control">
+                                <label>Movement Type</label>
+                                <select id="tb-move-type" class="input-dark" onchange="updateThemePreview()">
+                                    <option value="none">None (Static)</option>
+                                    <option value="pan">Pan (Slow Slide)</option>
+                                    <option value="pulse">Pulse (Zoom In/Out)</option>
+                                    <option value="matrix">Matrix Rain (Filter)</option>
+                                    <option value="stars">Star Field (Filter)</option>
+                                </select>
+                            </div>
+                            <div class="tb-control">
+                                <label>Anim Speed (sec)</label>
+                                <input type="number" id="tb-move-speed" class="input-dark" value="15" min="1" max="100"
+                                    oninput="updateThemePreview()">
+                            </div>
+                        </div>
+
+                        <div class="tb-actions">
+                            <button class="secondary-btn" onclick="toggleThemeBuilder()">Cancel</button>
+                            <button class="primary-btn" onclick="exportTheme()">Save & Apply Theme</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <label>Custom Theme</label>
+                    <div style="display:flex; gap:10px;">
+                        <button class="secondary-btn" onclick="handleThemeUpload()">Install Theme (.css)</button>
+                        <button class="secondary-btn" onclick="openThemeDocs()">Full Documentation</button>
+                    </div>
+                    <p style="font-size:0.8em; color:var(--text-secondary); margin-top:5px;">
+                        Custom themes are CSS files that override the root variables.
+                    </p>
+                </div>
+
+                <!-- Hidden file input -->
+                <input type="file" id="theme-upload-input" accept=".css" style="display:none;"
+                    onchange="processThemeUpload(this)">
+
+            </div>
+        </div>
+        <div id="modal-new-project" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2>Create New Project</h2>
+                <input type="text" id="new-project-name" placeholder="Enter Project Name (e.g. MyEpicRPG)">
+                <div class="modal-actions">
+                    <button class="secondary-btn" onclick="closeNewProjectModal()">Cancel</button>
+                    <button class="primary-btn" onclick="confirmNewProject()">Create</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-delete-confirm" class="modal-overlay hidden" style="z-index: 2000;">
+            <div class="modal-content" style="border: 1px solid red; max-width:400px;">
+                <h2 style="color:red; margin-top:0;">⚠ Delete Game?</h2>
+                <p id="delete-modal-msg" style="margin-bottom:20px; color:#ccc;">This action is permanent and cannot be
+                    undone.</p>
+
+                <!-- Step 1: Hold -->
+                <div id="delete-step-one">
+                    <p style="font-size:0.9em; opacity:0.8; margin-bottom:10px;">Hold the button below for 2 seconds to
+                        proceed.</p>
+                    <button id="btn-hold-delete" class="primary-btn"
+                        style="background:darkred; border:1px solid red; width:100%; padding:15px; font-weight:bold; user-select:none;"
+                        onmousedown="startDeleteHold()" onmouseup="cancelDeleteHold()"
+                        onmouseleave="cancelDeleteHold()">
+                        HOLD TO UNLOCK
+                    </button>
+                    <div style="background:#333; height:4px; width:100%; margin-top:5px; border-radius:2px;">
+                        <div id="delete-hold-progress"
+                            style="background:red; height:100%; width:0%; transition: width 0.1s linear;"></div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Type 'delete' -->
+                <div id="delete-step-two" class="hidden" style="margin-top:10px;">
+                    <p style="margin-bottom:10px;">Type <strong>delete</strong> to confirm:</p>
+                    <input type="text" id="delete-confirm-input"
+                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid red; padding:10px; width:100%; text-align:center; margin-bottom:15px;"
+                        placeholder="delete" oninput="checkDeleteInput()">
+
+                    <button id="btn-final-delete" class="primary-btn" onclick="executeDelete()" disabled
+                        style="background:red; width:100%; opacity:0.5; cursor:not-allowed;">
+                        DELETE PERMANENTLY
+                    </button>
+                </div>
+
+                <div style="margin-top:20px; text-align:center;">
+                    <button class="secondary-btn" onclick="closeDeleteModal()" style="width:100%;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Choice Editor Modal -->
+        <div id="modal-choice-editor" class="modal-overlay hidden" style="z-index: 1000;">
+            <div class="modal-content" style="width: 600px; max-width: 90%; max-height: 90vh; overflow-y: auto;">
+                <h3 id="choice-title">Edit Choice</h3>
+                <div class="setting-row">
+                    <label>Button Text</label>
+                    <input type="text" id="choice-text-input" placeholder="What the player clicks..."
+                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                </div>
+
+                <div class="setting-row" id="choice-template-row">
+                    <label>Action Template</label>
+                    <select id="choice-template-select" onchange="updateChoiceTemplateFields()"
+                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                        <option value="next_node">Next Dialogue Node</option>
+                        <option value="goto">Move / Navigate (Location)</option>
+                        <option value="addItem">Acquire Item</option>
+                        <option value="modifyStat">Modify Stat</option>
+                        <option value="modifyRel">Modify Relationship</option>
+                        <option value="npc_interact">Interact with NPC</option>
+                        <option value="start_dialogue">Start Dialogue Tree</option>
+                        <option value="modify_paperdoll">Modify Paperdoll</option>
+                        <option value="unlock_image">Unlock Gallery Image</option>
+                        <option value="ui_event">Interaction Event (Modal + Image)</option>
+                        <option value="custom">Custom / Script</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Fields Container -->
+                <div id="choice-dynamic-fields"
+                    style="background:var(--bg-secondary); padding:10px; border-radius:4px; margin-bottom:10px; border:1px solid var(--border-color);">
+                    <!-- Injected by JS based on template -->
+                </div>
+
+                <div class="setting-row">
+                    <label id="choice-target-label">Target Scene ID (Consequent Navigation)</label>
+                    <input type="text" id="choice-target-input" placeholder="Optional: ID of scene to go to"
+                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                </div>
+
+                <div class="setting-row" id="choice-condition-row">
+                    <label>Condition (JS Expression - Optional)</label>
+                    <input type="text" id="choice-condition-input" placeholder="e.g. strength > 5"
+                        style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                </div>
+
+                <details id="choice-adv-details"
+                    style="margin-top: 10px; border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; max-height: 300px; overflow-y: auto;">
+                    <summary id="choice-adv-summary" style="cursor: pointer; font-weight: 500;">Advanced Limitations
+                    </summary>
+
+                    <div class="setting-row" style="margin-top: 10px;">
+                        <label>Max Uses (0 = Infinite)</label>
+                        <input type="number" id="choice-max-uses" placeholder="0" min="0" value="0"
+                            style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                    </div>
+
+                    <div class="setting-row" style="flex-direction: row; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="choice-hide-max" style="margin:0;">
+                        <label for="choice-hide-max" style="margin:0;">Hide button after max uses?</label>
+                    </div>
+
+                    <hr style="border-color: var(--border-color); opacity: 0.3; margin: 10px 0;">
+
+                    <div class="setting-row">
+                        <label>Required Variable Name</label>
+                        <input type="text" id="choice-req-var" placeholder="e.g. has_met_king"
+                            style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                    </div>
+
+                    <div class="setting-row">
+                        <label>Required Variable Value</label>
+                        <input type="text" id="choice-req-val" placeholder="true"
+                            style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                    </div>
+
+                    <div class="setting-row" style="flex-direction: row; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="choice-hide-unavailable" style="margin:0;">
+                        <label for="choice-hide-unavailable" style="margin:0;">Hide if unavailable?</label>
+                    </div>
+
+                    <hr style="border-color: var(--border-color); opacity: 0.3; margin: 10px 0;">
+                    <h4 style="margin: 5px 0 10px; color: var(--accent-color);">Effects (On Click)</h4>
+
+                    <div class="setting-row">
+                        <label>Set Variable Name</label>
+                        <input type="text" id="choice-set-var" placeholder="e.g. met_king"
+                            style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                    </div>
+
+                    <div class="setting-row">
+                        <label>Set Variable Value</label>
+                        <input type="text" id="choice-set-val" placeholder="true"
+                            style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:8px;">
+                    </div>
+                </details>
+
+                <!-- Multi-Outcome Section -->
+                <details id="choice-outcomes-details"
+                    style="margin-top: 10px; border: 1px solid var(--accent-color); border-radius: 4px; padding: 10px; background: var(--bg-secondary);">
+                    <summary style="cursor: pointer; font-weight: 500; color: var(--accent-color);">📦 Additional
+                        Outcomes (Multi-Action)
+                    </summary>
+                    <p style="font-size: 0.8em; opacity: 0.7; margin: 10px 0 5px;">Add multiple effects that trigger
+                        together with the main action (e.g., navigate AND give item AND unlock image).</p>
+                    <div id="choice-outcomes-list"
+                        style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
+                        <!-- Dynamic outcome items injected here -->
+                    </div>
+                    <button class="secondary-btn" onclick="addChoiceOutcome()" style="width: 100%;">+ Add
+                        Outcome</button>
+                </details>
+
+                <div class="modal-actions">
+                    <button class="secondary-btn" onclick="closeChoiceEditor()">Cancel</button>
+                    <button class="primary-btn" onclick="saveChoiceFromEditor()">Save Choice</button>
+                    <button class="secondary-btn" onclick="deleteChoiceFromEditor()"
+                        style="color:red; border-color:red; margin-left:auto;">Delete</button>
+                </div>
+            </div>
+        </div>
+        <!-- New Variable Modal -->
+        <div id="modal-new-variable" class="modal-overlay hidden" style="z-index: 2000;">
+            <div class="modal-content">
+                <h2>New Variable</h2>
+                <input type="text" id="new-variable-name" placeholder="Variable Name (e.g. has_met_king)"
+                    style="background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); padding:10px; width:100%; margin-bottom:20px;">
+                <div class="modal-actions">
+                    <button class="secondary-btn" onclick="closeNewVariableModal()">Cancel</button>
+                    <button class="primary-btn" onclick="confirmNewVariable()">Create</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Delete Confirmation Modal -->
+        <div id="modal-delete-location" class="modal-overlay hidden" style="z-index: 2000;">
+            <div class="modal-content" style="border: 1px solid var(--accent-color); max-width:400px;">
+                <h2 style="color:var(--accent-color); margin-top:0;">🗑 Delete Location?</h2>
+                <p id="delete-location-msg" style="margin-bottom:20px; color:#ccc;">Are you sure you want to delete this
+                    location?</p>
+                <p style="font-size:0.9em; opacity:0.7; margin-bottom:20px;">This will remove the location and any
+                    connections to it. This action cannot be undone.</p>
+                <div class="modal-actions" style="display:flex; gap:10px;">
+                    <button class="secondary-btn" onclick="closeDeleteLocationModal()" style="flex:1;">Cancel</button>
+                    <button class="primary-btn" onclick="confirmDeleteLocation()"
+                        style="flex:1; background:darkred; border-color:red;">Delete</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+    <!-- Dialogue Node Editor Modal -->
+    <div id="modal-dialogue-node-editor" class="modal-overlay hidden" style="z-index: 2000;">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <h2>Edit Dialogue Node</h2>
+
+            <div class="setting-row">
+                <label>Speaker</label>
+                <div style="display:flex; gap:10px;">
+                    <select id="diag-node-speaker-select" class="input-dark" style="flex:1;"
+                        onchange="document.getElementById('diag-node-speaker-manual').value = this.value">
+                        <option value="player">Player</option>
+                        <option value="narrator">Narrator</option>
+                        <!-- NPC options injected -->
+                    </select>
+                    <input type="text" id="diag-node-speaker-manual" class="input-dark" placeholder="Manual ID"
+                        style="flex:1;">
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <label>Dialogue Text</label>
+                <textarea id="diag-node-text" rows="4" class="input-dark"
+                    placeholder="What does the character say?"></textarea>
+            </div>
+
+            <div class="setting-row">
+                <label>Visuals (Optional)</label>
+                <div style="background: var(--bg-secondary); padding: 10px; border-radius: 4px;">
+                    <div class="setting-row">
+                        <label>Node Image (e.g. Character Emotion or Scene)</label>
+                        <div style="display:flex; gap:5px;">
+                            <input type="text" id="diag-node-image" class="input-dark" style="flex:1;"
+                                placeholder="assets/chars/laughing.png">
+                            <button class="secondary-btn"
+                                onclick="window.openImagePicker && window.openImagePicker((p) => document.getElementById('diag-node-image').value = p)">Browse</button>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <label>Paperdoll Outfit Override</label>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input type="hidden" id="diag-node-paperdoll-data">
+                            <span id="diag-node-paperdoll-status"
+                                style="font-size:0.9em; opacity:0.7; font-style:italic;">No Override</span>
+                            <button class="secondary-btn" onclick="openDialoguePaperdollComposer()">Compose
+                                Outfit</button>
+                            <button class="secondary-btn" onclick="clearDialoguePaperdoll()"
+                                style="color:red;">Clear</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- Universal Limitations & Outcomes -->
+            <details
+                style="margin-top: 20px; border: 1px solid var(--border-color); border-radius: 4px; padding: 10px;">
+                <summary class="section-header">Requirements & Limitations</summary>
+                <p style="font-size:0.8em; opacity:0.7;">Conditions required to visit this node (e.g. Min Stats).</p>
+                <div id="diag-node-req-list" class="dynamic-list"></div>
+                <button class="secondary-btn" onclick="addDialogueNodeRequirement()">+ Add Requirement</button>
+            </details>
+
+            <details
+                style="margin-top: 10px; border: 1px solid var(--border-color); border-radius: 4px; padding: 10px;">
+                <summary class="section-header">Outcomes & Effects</summary>
+                <p style="font-size:0.8em; opacity:0.7;">Things that happen when this node is shown.</p>
+                <div id="diag-node-outcome-list" class="dynamic-list"></div>
+                <button class="secondary-btn" onclick="addDialogueNodeOutcome()">+ Add Outcome</button>
+            </details>
+
+            <div class="modal-actions" style="margin-top:20px;">
+                <button class="secondary-btn" onclick="closeDialogueNodeEditor()">Cancel</button>
+                <button class="primary-btn" onclick="saveDialogueNodeFromEditor()">Save Node</button>
+            </div>
+        </div>
+    </div>
+    <!-- Paperdoll Composer Modal -->
+    <div id="modal-paperdoll-composer" class="modal-overlay hidden" style="z-index: 2500;">
+        <div class="glass-container" style="width: 900px; height: 700px; display: flex; flex-direction: column;">
+
+            <div
+                style="padding: 20px; border-bottom: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="margin:0; text-transform:uppercase; letter-spacing:2px; color:var(--accent-color);">
+                    Design Outfit</h2>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <select id="pd-composer-char-select" class="input-dark" onchange="loadPaperdollComposer(this.value)"
+                        style="width:200px;">
+                        <!-- Characters injected here -->
+                    </select>
+                    <button onclick="closePaperdollComposer()"
+                        style="background:none; border:none; color:var(--text-secondary); font-size:1.5rem; cursor:pointer;">&times;</button>
+                </div>
+            </div>
+
+            <div style="display:flex; flex:1; overflow:hidden;">
+                <!-- Preview Area -->
+                <div
+                    style="flex:1; background:var(--bg-secondary); position:relative; display:flex; align-items:center; justify-content:center;">
+                    <div id="pd-composer-preview" style="width: 100%; height: 100%; position:relative;">
+                        <!-- Paperdoll Canvas/Images -->
+                    </div>
+                </div>
+
+                <!-- Controls Area -->
+                <div
+                    style="width: 350px; background:var(--bg-tertiary); border-left:1px solid var(--border-color); overflow-y:auto; padding:20px;">
+                    <h3 style="margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+                        Layers</h3>
+                    <div id="pd-composer-controls">
+                        <!-- Controls injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="padding: 20px; border-top: 1px solid var(--border-color); display:flex; justify-content:flex-end; gap:10px;">
+                <button class="secondary-btn" onclick="closePaperdollComposer()">Cancel</button>
+                <button class="primary-btn" onclick="savePaperdollComposerState()">Save Outfit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Prompt Modal (Replaces native prompt() which is unsupported in Electron) -->
+    <div id="modal-custom-prompt" class="modal-overlay hidden" style="z-index: 3000;">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3 id="custom-prompt-title" style="margin-top:0;">Input</h3>
+            <input type="text" id="custom-prompt-input" class="input-dark" style="width:100%; margin-bottom:20px;">
+            <div class="modal-actions">
+                <button class="secondary-btn" onclick="resolveCustomPrompt(null)">Cancel</button>
+                <button class="primary-btn"
+                    onclick="resolveCustomPrompt(document.getElementById('custom-prompt-input').value)">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="theme-effects.js"></script>
+    <script src="renderer.js"></script>
+</body>
+
+</html>

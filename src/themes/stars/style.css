@@ -1,0 +1,19 @@
+:root {
+    --bg-primary: #050514;
+    /* Dark Blue but visible panels */
+    --bg-secondary: rgba(25, 25, 60, 0.9);
+    --bg-tertiary: rgba(35, 35, 80, 0.85);
+
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0ff;
+
+    --accent-color: #ffd700;
+    --accent-glow: rgba(255, 215, 0, 0.5);
+    --accent-text: #000000;
+
+    --border-color: rgba(100, 100, 255, 0.5);
+    --panel-backdrop: blur(5px);
+    --card-shadow: 0 5px 20px rgba(0, 0, 50, 0.5);
+
+    --bg-gradient: none;
+}

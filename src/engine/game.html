@@ -1,0 +1,3981 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryForge Game</title>
+    <link rel="stylesheet" href="../launcher/style.css">
+    <link id="theme-stylesheet" rel="stylesheet" href="../themes/forge/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr 280px;
+            grid-template-rows: 100vh;
+            height: 100vh;
+            width: 100vw;
+            background-color: var(--bg-primary);
+            overflow: hidden;
+        }
+
+        .scene-container {
+            position: relative;
+            background-color: transparent;
+            /* Let app-background show through */
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+        }
+
+        /* --- Tabs & Lists --- */
+        .tab-header {
+            display: flex;
+            background: var(--bg-tertiary);
+            backdrop-filter: var(--panel-backdrop);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-content {
+            padding: 15px;
+            overflow-y: auto;
+            height: calc(100vh - 350px);
+            /* Adjust based on top widgets */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .item-row,
+        .skill-row,
+        .quest-row {
+            padding: 8px 10px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            margin-bottom: 8px;
+            border: 1px solid transparent;
+        }
+
+        .item-row:hover {
+            border-color: var(--border-color);
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .item-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(20, 20, 20, 0.9);
+            border-left: 4px solid var(--accent-color);
+            padding: 12px 20px;
+            border-radius: 4px;
+            color: #fff;
+            backdrop-filter: blur(5px);
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+
+
+        .scene-image {
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            /* Allow theme background to show */
+            /* transform: scale(1.1); */
+            /* Prevent blur edges */
+        }
+
+        .primary-scene-image {
+            width: 100%;
+            max-width: 800px;
+            /* Match dialogue box width */
+            height: auto;
+            max-height: 60vh;
+            /* Prevent it from taking over too much height */
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin: 0 auto 20px auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+            display: block;
+            background: #111;
+        }
+
+        .dialogue-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* Remove gradient so background is clean */
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* Center vertically */
+            align-items: center;
+            /* Center horizontally */
+            padding: 40px;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        /* Adjust dialogue box to not push to bottom anymore since we are centering the whole stack */
+        .dialogue-box {
+            background-color: var(--bg-secondary);
+            backdrop-filter: var(--panel-backdrop);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            /* Ensure centering */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-height: 40vh;
+            /* Adjust height based on image presence */
+            overflow-y: auto;
+            pointer-events: auto;
+        }
+
+
+        .speaker-name {
+            color: var(--accent-color);
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Glass Container Content - ensure proper display */
+        .glass-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        .dialogue-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            min-height: 20px;
+            display: block;
+        }
+
+        .choices-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .choice-btn {
+            background-color: var(--bg-tertiary);
+            backdrop-filter: var(--panel-backdrop);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            text-align: left;
+        }
+
+        .choice-btn:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+
+        /* Sidebar Widgets */
+        .widget {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .clock-widget {
+            text-align: center;
+        }
+
+        .time-display {
+            font-size: 2rem;
+            font-weight: 300;
+            color: var(--text-primary);
+        }
+
+        .date-display {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        /* --- New Menu Modals --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-backdrop, rgba(0, 0, 0, 0.85));
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Ensure Save Modal is on top of Start Menu (9999) */
+        #save-load-modal {
+            z-index: 10001;
+        }
+
+        /* Ensure Custom Prompt is on top of everything */
+        #custom-prompt-modal {
+            z-index: 20000;
+        }
+
+        .menu-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            z-index: 10002;
+            /* Ensure menu panel is above overlay if needed */
+        }
+
+        .menu-title {
+            font-size: 2rem;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .menu-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .menu-btn:hover {
+            background: var(--accent-color);
+            color: #fff;
+            transform: scale(1.02);
+        }
+
+        /* Save Slots */
+        .save-slots-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            max-height: 50vh;
+            overflow-y: auto;
+            width: 100%;
+            padding-right: 10px;
+        }
+
+        .save-slot {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            /* cursor: pointer; removed global pointer if buttons handle it */
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .save-slot:hover {
+            border-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .save-slot.empty {
+            color: var(--text-secondary);
+            font-style: italic;
+            align-items: center;
+            justify-content: center;
+            height: auto;
+            min-height: 120px;
+            border-style: dashed;
+        }
+
+        .save-slot-info h4 {
+            margin: 0 0 5px 0;
+            color: var(--accent-color);
+        }
+
+        .save-slot-info p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .save-slot-info {
+            flex: 1;
+        }
+
+        .save-slot-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .slot-btn {
+            flex: 1;
+            padding: 6px 4px;
+            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.85em;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .slot-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        .slot-btn.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .slot-btn.danger {
+            border-color: rgba(200, 50, 50, 0.5);
+            color: rgba(255, 100, 100, 1);
+        }
+
+        .slot-btn.danger:hover {
+            background: red;
+            color: white;
+        }
+
+        /* Glass Mode Overlay Adjustments */
+        body.glass-mode .modal-overlay,
+        body.glass-mode #shop-modal,
+        body.glass-mode #npc-interaction-modal {
+            background: transparent !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+        }
+
+        .hidden-by-modal {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* ===== Visual Novel Dialogue Screen ===== */
+        #dialogue-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 8000;
+            display: none;
+            flex-direction: column;
+            background: #000;
+        }
+
+        #dialogue-screen.active {
+            display: flex;
+        }
+
+        .dialogue-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
+
+        .dialogue-scene-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -60%);
+            max-width: 80%;
+            max-height: 60%;
+            object-fit: contain;
+            z-index: 2;
+        }
+
+        .dialogue-speaker-container {
+            position: absolute;
+            top: 50px;
+            left: 30px;
+            z-index: 3;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .dialogue-speaker-image {
+            max-width: 350px;
+            max-height: 450px;
+            object-fit: contain;
+            filter: drop-shadow(0 5px 20px rgba(0, 0, 0, 0.5));
+            border-radius: 8px;
+        }
+
+        .dialogue-speaker-paperdoll {
+            position: relative;
+            width: 350px;
+            height: 450px;
+        }
+
+        .dialogue-textbox-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 20px 40px 30px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.8) 70%, transparent 100%);
+        }
+
+        .dialogue-speaker-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-left: 20px;
+        }
+
+        .dialogue-textbox {
+            background: rgba(20, 20, 30, 0.9);
+            border: 2px solid var(--accent-color);
+            border-radius: 8px;
+            padding: 25px 30px;
+            min-height: 120px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .dialogue-textbox:hover {
+            border-color: var(--text-primary);
+        }
+
+        .dialogue-text {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+        }
+
+        .dialogue-choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .dialogue-choice-btn {
+            background: rgba(30, 30, 40, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px 25px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dialogue-choice-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        .dialogue-choice-btn span.arrow {
+            opacity: 0.4;
+            font-size: 1.3em;
+            transition: opacity 0.2s;
+        }
+
+        .dialogue-choice-btn:hover span.arrow {
+            opacity: 1;
+        }
+
+        .dialogue-nav-buttons {
+            position: absolute;
+            bottom: 15px;
+            right: 50px;
+            display: flex;
+            gap: 10px;
+            z-index: 15;
+        }
+
+        .dialogue-nav-btn {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialogue-nav-btn:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .dialogue-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dialogue-close-btn:hover {
+            background: #c00;
+            color: white;
+            border-color: #c00;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Start Menu Overlay -->
+    <div id="start-menu"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: transparent; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <h1
+            style="font-size: 4rem; margin-bottom: 2rem; color: var(--accent-color); text-transform: uppercase; letter-spacing: 5px;">
+            StoryForge</h1>
+        <div style="display: flex; flex-direction: column; gap: 1rem; width: 300px;">
+            <button class="choice-btn" onclick="startGame(true)"
+                style="text-align: center; padding: 15px; font-size: 1.2rem;">New Game</button>
+            <button class="choice-btn" onclick="openSaveLoadModal()"
+                style="text-align: center; padding: 15px; font-size: 1.2rem;">Saves</button>
+            <button id="btn-continue" class="choice-btn" onclick="startGame(false)"
+                style="text-align: center; padding: 15px; font-size: 1.2rem; display: none;">Continue</button>
+        </div>
+        <div style="margin-top: 2rem; color: #666;">Version 0.2.0-alpha</div>
+    </div>
+
+    <!-- Visual Novel Dialogue Screen -->
+    <div id="dialogue-screen">
+        <!-- Background Image (from dialogue tree) -->
+        <div id="dialogue-bg" class="dialogue-background"></div>
+
+        <!-- Scene/Node Image (optional per node) -->
+        <img id="dialogue-scene-img" class="dialogue-scene-image" style="display: none;" />
+
+        <!-- Speaker Image/Paperdoll Container -->
+        <div class="dialogue-speaker-container">
+            <img id="dialogue-speaker-img" class="dialogue-speaker-image" style="display: none;" />
+            <div id="dialogue-speaker-pd" class="dialogue-speaker-paperdoll" style="display: none;"></div>
+        </div>
+
+        <!-- Close Button -->
+        <button id="dialogue-close-btn" class="dialogue-close-btn" onclick="closeDialogueScreen()">&times;</button>
+
+        <!-- Text Box Container -->
+        <div class="dialogue-textbox-container">
+            <div id="dialogue-speaker-name" class="dialogue-speaker-name"></div>
+            <div id="dialogue-textbox" class="dialogue-textbox" onclick="advanceDialogue()">
+                <div id="vn-dialogue-text" class="dialogue-text"></div>
+            </div>
+
+            <!-- Choices (shown when multiple paths) -->
+            <div id="dialogue-choices" class="dialogue-choices-container" style="display: none;"></div>
+        </div>
+
+        <!-- Navigation Buttons (for linear dialogue) -->
+        <div class="dialogue-nav-buttons">
+            <button id="dialogue-back-btn" class="dialogue-nav-btn" onclick="goBackDialogue()"
+                style="display: none;">◀</button>
+            <button id="dialogue-next-btn" class="dialogue-nav-btn" onclick="advanceDialogue()">▶</button>
+        </div>
+    </div>
+
+    <div id="shop-modal"
+        style="display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: var(--modal-backdrop, rgba(0,0,0,0.85)); backdrop-filter: var(--panel-backdrop); z-index: 60; align-items: center; justify-content: center;">
+        <div class="glass-container" style="width: 800px; height: 600px; display: flex; flex-direction: column;">
+            <div class="glass-filter"></div>
+            <div class="glass-overlay"></div>
+            <div class="glass-specular"></div>
+            <div class="glass-content" style="flex-direction:column; padding:0;">
+                <!-- Shop Header -->
+                <div
+                    style="padding: 20px; background: var(--bg-tertiary); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <h2 id="shop-title" style="margin: 0; color: var(--text-primary);">Shop</h2>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span id="player-money-display" style="color: var(--accent-color); font-weight: bold;">$0</span>
+                        <button onclick="closeShop()"
+                            style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.5rem;">&times;</button>
+                    </div>
+                </div>
+
+                <!-- Shop Body -->
+                <div style="flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden;">
+                    <!-- Item List -->
+                    <div id="shop-items"
+                        style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                        <!-- Items injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: In-Game Menu -->
+    <div id="in-game-menu" class="modal-overlay hidden">
+        <div class="menu-panel">
+            <div class="menu-title">Menu</div>
+            <button class="menu-btn" onclick="openSaveLoadModal()">Saves</button>
+            <button class="menu-btn" onclick="openInGameSettings()">Settings</button>
+            <button class="menu-btn" onclick="openInGameWalkthrough()">Walkthrough</button>
+            <hr style="border-color:var(--border-color); opacity:0.3; width:100%;">
+            <button class="menu-btn" onclick="closeInGameMenu()" style="background:transparent;">Return to Game</button>
+            <button class="menu-btn" onclick="window.electronAPI.closeGame()"
+                style="color:red; border-color:red; background:rgba(50,0,0,0.5);">Exit to Desktop</button>
+        </div>
+    </div>
+
+    <!-- NEW: Character Creation Modal -->
+    <div id="character-creation-modal" class="modal-overlay hidden" style="z-index: 1100;">
+        <div class="glass-container" style="width: 900px; height: 700px; display: flex; flex-direction: column;">
+            <div class="glass-filter"></div>
+            <div class="glass-overlay"></div>
+            <div class="glass-specular"></div>
+            <div class="glass-content" style="flex-direction:column; padding:0; overflow:hidden;">
+
+                <div style="padding: 20px; border-bottom: 1px solid var(--border-color); text-align:center;">
+                    <h2 style="margin:0; color:var(--accent-color);">Create Your Character</h2>
+                </div>
+
+                <div style="display:flex; flex:1; overflow:hidden;">
+                    <!-- Sidebar Tabs -->
+                    <div
+                        style="width: 200px; background: var(--bg-tertiary); border-right: 1px solid var(--border-color); display:flex; flex-direction:column;">
+                        <button class="tab-btn active" id="cc-tab-identity"
+                            onclick="window.switchCCTab('identity')">Identity</button>
+                        <button class="tab-btn" id="cc-tab-appearance"
+                            onclick="window.switchCCTab('appearance')">Appearance</button>
+                        <button class="tab-btn" id="cc-tab-stats" onclick="window.switchCCTab('stats')">Stats</button>
+                        <button class="tab-btn" id="cc-tab-cheats"
+                            onclick="window.switchCCTab('cheats')">Options</button>
+                    </div>
+
+                    <!-- Content Area -->
+                    <div style="flex:1; padding:20px; overflow-y:auto; position:relative;">
+
+                        <!-- Identity View -->
+                        <div id="cc-view-identity" class="cc-view">
+                            <h3 style="margin-top:0;">Who are you?</h3>
+                            <div class="setting-row" style="margin-bottom:15px;">
+                                <label
+                                    style="display:block; color:var(--text-secondary); margin-bottom:5px;">Name</label>
+                                <input type="text" id="cc-name" class="input-dark"
+                                    style="width:100%; padding:10px; background:var(--bg-primary); border:1px solid var(--border-color); color:var(--text-primary);">
+                            </div>
+                            <div class="setting-row" style="margin-bottom:15px;">
+                                <label
+                                    style="display:block; color:var(--text-secondary); margin-bottom:5px;">Pronouns</label>
+                                <select id="cc-pronouns" class="input-dark"
+                                    style="width:100%; padding:10px; background:var(--bg-primary); border:1px solid var(--border-color); color:var(--text-primary);">
+                                    <option>They/Them</option>
+                                    <option>She/Her</option>
+                                    <option>He/Him</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div id="cc-identity-extras"></div>
+                        </div>
+
+                        <!-- Appearance View -->
+                        <div id="cc-view-appearance" class="cc-view hidden">
+                            <!-- Helper for Image vs Paperdoll -->
+                            <div id="cc-appearance-content"></div>
+                        </div>
+
+                        <!-- Stats View -->
+                        <div id="cc-view-stats" class="cc-view hidden">
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <h3 style="margin:0;">Assign Points</h3>
+                                <div style="background:var(--bg-tertiary); padding:5px 10px; border-radius:4px;">
+                                    Points: <span id="cc-points-display"
+                                        style="color:var(--accent-color); font-weight:bold;">10</span>
+                                </div>
+                            </div>
+                            <div id="cc-stats-list"></div>
+                        </div>
+
+                        <!-- Cheats View -->
+                        <div id="cc-view-cheats" class="cc-view hidden">
+                            <h3>Game Options</h3>
+                            <div id="cc-cheats-list"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div
+                    style="padding: 20px; border-top: 1px solid var(--border-color); display:flex; justify-content:flex-end; gap:10px;">
+                    <button class="secondary-btn"
+                        style="padding:10px 20px; background:transparent; border:1px solid var(--border-color); color:var(--text-primary);"
+                        onclick="window.cancelCharacterCreation()">Back</button>
+                    <button class="primary-btn"
+                        style="padding:10px 20px; background:var(--accent-color); border:none; color:white; font-weight:bold;"
+                        onclick="window.finishCharacterCreation()">Start Journey</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Save/Load Modal -->
+    <div id="save-load-modal" class="modal-overlay hidden">
+        <div class="glass-container" style="width: 800px; height: 600px; display: flex; flex-direction: column;">
+            <div class="glass-filter"></div>
+            <div class="glass-overlay"></div>
+            <div class="glass-specular"></div>
+            <div class="glass-content" style="flex-direction:column; padding:0;">
+                <div
+                    style="padding: 20px; border-bottom: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                    <h2 id="sl-modal-title"
+                        style="margin:0; text-transform:uppercase; letter-spacing:2px; color:var(--text-primary);">Saves
+                    </h2>
+                    <button onclick="closeSaveLoadModal()"
+                        style="background:none; border:none; color:var(--text-secondary); font-size:1.5rem; cursor:pointer;">&times;</button>
+                </div>
+
+                <div style="padding:20px; flex:1; overflow-y:auto;">
+                    <div id="save-slots-list" class="save-slots-container">
+                        <!-- Slots injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Prompt Modal (replaces native prompt() which doesn't work in Electron) -->
+    <div id="custom-prompt-modal" class="modal-overlay hidden"
+        style="background: rgba(0,0,0,0.9); pointer-events:auto;">
+        <div class="glass-container" onclick="event.stopPropagation()"
+            style="width: 400px; display: flex; flex-direction: column; pointer-events: auto;">
+            <div class="glass-filter"></div>
+            <div class="glass-overlay"></div>
+            <div class="glass-specular"></div>
+            <div class="glass-content" style="flex-direction:column; padding:20px; pointer-events:auto;">
+                <h3 id="custom-prompt-title" style="margin:0 0 15px 0; color:var(--text-primary);">Enter Value</h3>
+                <input type="text" id="custom-prompt-input" tabindex="0" autofocus
+                    style="width:100%; padding:12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-tertiary); color:var(--text-primary); font-size:1rem; margin-bottom:15px; box-sizing:border-box; pointer-events:auto; cursor:text;"
+                    placeholder="Enter a name...">
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button id="custom-prompt-cancel" type="button"
+                        style="padding:10px 20px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-secondary); color:var(--text-secondary); cursor:pointer; pointer-events:auto; transition: all 0.2s;"
+                        onmouseover="this.style.borderColor='var(--accent-color)'; this.style.color='var(--text-primary)';"
+                        onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-secondary)';">
+                        Cancel
+                    </button>
+                    <button id="custom-prompt-ok" type="button"
+                        style="padding:10px 20px; border:none; border-radius:8px; background:var(--accent-color); color:white; cursor:pointer; font-weight:bold; pointer-events:auto; transition: all 0.2s;"
+                        onmouseover="this.style.opacity='0.85'; this.style.transform='scale(1.02)';"
+                        onmouseout="this.style.opacity='1'; this.style.transform='scale(1)';">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- In-Game Settings Modal -->
+    <div id="in-game-settings-modal" class="modal-overlay hidden">
+        <div class="glass-container" style="width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="glass-filter"></div>
+            <div class="glass-overlay"></div>
+            <div class="glass-specular"></div>
+            <div class="glass-content" style="flex-direction:column; padding:0;">
+                <div
+                    style="padding: 20px; border-bottom: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="margin:0; text-transform:uppercase; letter-spacing:2px; color:var(--text-primary);">
+                        Settings</h2>
+                    <button onclick="closeInGameSettings()"
+                        style="background:none; border:none; color:var(--text-secondary); font-size:1.5rem; cursor:pointer;">&times;</button>
+                </div>
+
+                <div style="padding:20px; flex:1; overflow-y:auto;">
+                    <h3 style="color:var(--accent-color); margin-top:0;">Appearance</h3>
+
+                    <div class="setting-row" style="margin-bottom:20px;">
+                        <label style="display:block; color:var(--text-secondary); margin-bottom:10px;">Select
+                            Theme</label>
+                        <div id="ingame-theme-grid"
+                            style="display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px;">
+                            <!-- Theme cards injected here -->
+                        </div>
+                    </div>
+
+                    <div class="setting-row" style="margin-bottom:20px;">
+                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                            <input type="checkbox" id="ingame-glass-toggle"
+                                onchange="toggleInGameGlassMode(this.checked)" style="width:auto; margin:0;">
+                            <span style="color:var(--text-primary);">Enable Liquid Glass Effects</span>
+                        </label>
+                        <p style="font-size:0.8em; color:var(--text-secondary); margin-top:5px;">
+                            Makes UI panels semi-transparent with a blur effect.
+                        </p>
+                    </div>
+
+                    <hr style="border-color: var(--border-color); opacity: 0.3; margin: 20px 0;">
+
+                    <h3 style="color:var(--accent-color);">Audio</h3>
+                    <div class="setting-row" style="margin-bottom:15px;">
+                        <label style="display:block; color:var(--text-secondary); margin-bottom:5px;">Master
+                            Volume</label>
+                        <input type="range" id="ingame-volume" min="0" max="100" value="80" style="width:100%;">
+                    </div>
+
+                    <div class="setting-row" style="margin-bottom:15px;">
+                        <label style="display:block; color:var(--text-secondary); margin-bottom:5px;">Text Speed</label>
+                        <select id="ingame-text-speed" class="input-dark"
+                            style="width:100%; padding:8px; background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color);">
+                            <option value="instant">Instant</option>
+                            <option value="fast">Fast</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="slow">Slow</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- In-Game Walkthrough Modal -->
+    <div id="in-game-walkthrough-modal" class="modal-overlay hidden">
+        <div class="glass-container" style="width: 900px; height: 80vh; display: flex; flex-direction: column;">
+            <div class="glass-filter"></div>
+            <div class="glass-overlay"></div>
+            <div class="glass-specular"></div>
+            <div class="glass-content" style="flex-direction:column; padding:0;">
+                <div
+                    style="padding: 20px; border-bottom: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="margin:0; text-transform:uppercase; letter-spacing:2px; color:var(--text-primary);">
+                        Walkthrough</h2>
+                    <button onclick="closeInGameWalkthrough()"
+                        style="background:none; border:none; color:var(--text-secondary); font-size:1.5rem; cursor:pointer;">&times;</button>
+                </div>
+
+                <div style="display:flex; flex:1; overflow:hidden;">
+                    <!-- Chapter Sidebar -->
+                    <div id="walkthrough-chapter-list"
+                        style="width:200px; background:var(--bg-tertiary); border-right:1px solid var(--border-color); overflow-y:auto; padding:10px;">
+                        <div style="color:var(--text-secondary); text-align:center; padding:20px;">No walkthrough
+                            available</div>
+                    </div>
+
+                    <!-- Content Area -->
+                    <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+                        <div id="walkthrough-content"
+                            style="flex:1; padding:30px; overflow-y:auto; line-height:1.8; color:var(--text-primary);">
+                            <div style="text-align:center; color:var(--text-secondary); padding:40px;">
+                                <p style="font-size:1.2em;">📖</p>
+                                <p>Select a chapter from the sidebar to view its content.</p>
+                                <p style="font-size:0.9em; opacity:0.7;">If no chapters are listed, the game creator
+                                    hasn't added a walkthrough yet.</p>
+                            </div>
+                        </div>
+
+                        <!-- Navigation Footer -->
+                        <div id="walkthrough-nav"
+                            style="padding:15px 20px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; background:var(--bg-tertiary);">
+                            <button id="walkthrough-prev" class="choice-btn" onclick="walkthroughNavigate(-1)"
+                                style="padding:8px 20px;" disabled>← Previous</button>
+                            <span id="walkthrough-page-indicator" style="color:var(--text-secondary);">Page 1 of
+                                1</span>
+                            <button id="walkthrough-next" class="choice-btn" onclick="walkthroughNavigate(1)"
+                                style="padding:8px 20px;" disabled>Next →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-background"></div>
+    <canvas id="theme-canvas"
+        style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; pointer-events:none; display:none;"></canvas>
+    <!-- SVG FILTER DEFINITION -->
+    <svg style="display: none">
+        <filter id="lg-dist" x="0%" y="0%" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="2" seed="92" result="noise" />
+            <feGaussianBlur in="noise" stdDeviation="2" result="blurred" />
+            <feDisplacementMap in="SourceGraphic" in2="blurred" scale="70" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+    </svg>
+    <div class="game-layout" style="display:none;">
+        <!-- Left Sidebar: Player Info -->
+        <aside class="sidebar glass-container" style="width: auto;">
+            <div class="glass-filter"></div>
+            <div class="glass-overlay"></div>
+            <div class="glass-specular"></div>
+            <div class="glass-content" style="flex-direction:column; padding:0;">
+                <div class="widget">
+                    <div class="logo" style="margin-bottom: 10px; font-size: 1.2rem;">My Character</div>
+                    <div class="paperdoll-container"
+                        style="position: relative; width: 100%; aspect-ratio: 9/16; background: var(--bg-tertiary); border-radius: 8px; overflow: hidden;">
+                        <!-- Player Paperdoll Container -->
+                        <div id="player-pd-content" style="position: absolute; top:0; left:0; width:100%; height:100%;">
+                            <!-- Layers injected by core.js -->
+                        </div>
+                        <div id="pd-placeholder" class="hidden"
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#555;">
+                            [No Image]
+                        </div>
+                    </div>
+                </div>
+                <div class="widget" style="padding:0; border-bottom: none;">
+                    <div class="tab-header">
+                        <button class="tab-btn active" onclick="switchTab('inventory')">Inv</button>
+                        <button class="tab-btn" onclick="switchTab('skills')">Skills</button>
+                        <button class="tab-btn" onclick="switchTab('quests')">Quests</button>
+                        <button class="tab-btn" onclick="switchTab('relations')">Rel</button>
+                        <button class="tab-btn" onclick="switchTab('gallery')">Gal</button>
+                    </div>
+
+                    <div id="tab-inventory" class="tab-content">
+                        <div style="color: var(--text-secondary); text-align: center; margin-top: 20px;">Empty
+                            Inventory
+                        </div>
+                    </div>
+
+                    <div id="tab-skills" class="tab-content hidden">
+                        <div style="color: var(--text-secondary); text-align: center; margin-top: 20px;">No Skills
+                            Learned
+                        </div>
+                    </div>
+
+                    <div id="tab-quests" class="tab-content hidden">
+                        <div style="color: var(--text-secondary); text-align: center; margin-top: 20px;">No Active
+                            Quests
+                        </div>
+                    </div>
+
+                    <div id="tab-relations" class="tab-content hidden">
+                        <div style="color: var(--text-secondary); text-align: center; margin-top: 20px;">No
+                            Relationships
+                        </div>
+                    </div>
+
+                    <div id="tab-gallery" class="tab-content hidden">
+                        <div style="color: var(--text-secondary); text-align: center; margin-top: 20px;">Locked
+                        </div>
+                        <div id="gallery-grid"
+                            style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:10px;"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: Game View -->
+        <main class="scene-container">
+            <div class="scene-image"></div>
+
+            <div id="npc-overlay"
+                style="position:absolute; bottom:20px; left:20px; right:20px; display:flex; gap:10px; z-index:10; pointer-events:none;">
+            </div>
+
+            <!-- NPC Interaction Modal -->
+            <div id="npc-interaction-modal"
+                style="display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); backdrop-filter: var(--panel-backdrop); z-index: 50; align-items: center; justify-content: center;">
+                <div class="glass-container"
+                    style="width: 95%; max-width: 1100px; height: 85vh; display: flex; flex-direction: column;">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content" style="flex-direction:column; padding:0;">
+
+                        <!-- Header -->
+                        <div
+                            style="height: 70px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 2px solid var(--border-color); background: var(--bg-tertiary);">
+                            <div id="npc-modal-name"
+                                style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 2px;">
+                                NPC NAME</div>
+                            <div onclick="closeNPCInteraction()"
+                                style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: var(--text-primary);">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Body -->
+                        <div style="flex: 1; display: flex; overflow: hidden; padding: 30px; gap: 30px;">
+
+                            <!-- Left Column -->
+                            <div style="width: 320px; display: flex; flex-direction: column; gap: 20px;">
+                                <!-- Image -->
+                                <!-- Image -->
+                                <div id="npc-modal-image-container"
+                                    style="width: 100%; aspect-ratio: 9/16; background: var(--bg-tertiary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                                    <img id="npc-modal-image" src=""
+                                        style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                    <div id="npc-modal-pd-root"
+                                        style="position:absolute; top:0; left:0; width:100%; height:100%; display:none;">
+                                        <!-- Paperdoll layers injected here -->
+                                    </div>
+                                    <div id="npc-img-placeholder"
+                                        style="color: var(--text-secondary); font-weight: bold; text-align: center;">
+                                        <div style="font-size: 3rem; margin-bottom: 10px;">👤</div>
+                                        NPC
+                                    </div>
+                                </div>
+
+                                <!-- Info/Stats Box -->
+                                <div
+                                    style="flex: 1; background: var(--bg-tertiary); border: 1px solid var(--border-color); padding: 20px; overflow-y: auto;">
+                                    <div
+                                        style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
+                                        Attributes</div>
+                                    <div id="npc-modal-stats"
+                                        style="display: flex; flex-direction: column; gap: 12px; color: var(--text-primary); font-size: 0.95rem;">
+                                        <!-- Stats injected here -->
+                                    </div>
+                                </div>
+
+                                <!-- Quests Box -->
+                                <div
+                                    style="height: 180px; background: var(--bg-tertiary); border: 1px solid var(--border-color); padding: 20px; overflow-y: auto;">
+                                    <div
+                                        style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
+                                        NPC Quests</div>
+                                    <div id="npc-modal-quests"
+                                        style="display: flex; flex-direction: column; gap: 8px; color: var(--text-primary); font-size: 0.9rem;">
+                                        <!-- Quests injected here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Choices -->
+                            <div style="flex: 1; display: flex; flex-direction: column;">
+                                <!-- Dialogue Text Area (Optional, keeping small or integrated) -->
+                                <div id="npc-modal-text"
+                                    style="margin-bottom: 20px; color: var(--text-primary); font-size: 1.1rem; line-height: 1.6; padding: 10px; min-height: 60px;">
+                                    <!-- Dialogue goes here -->
+                                </div>
+
+                                <div id="npc-modal-choices"
+                                    style="flex: 1; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-right: 10px;">
+                                    <!-- Buttons injected here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dialogue-overlay">
+                <img id="primary-scene-image" class="primary-scene-image" src="" style="display:none;"
+                    onload="this.style.display='block'" onerror="this.style.display='none'">
+                <div class="dialogue-box glass-container">
+                    <div class="glass-filter"></div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-specular"></div>
+                    <div class="glass-content"
+                        style="flex-direction:column; justify-content:flex-start; padding:15px; display:flex;">
+                        <div class="speaker-name" id="speaker-name"></div>
+                        <div class="dialogue-text" id="dialogue-text"
+                            style="white-space: pre-wrap; word-break: break-word;">
+                        </div>
+                        <div class="choices-container" id="choices-container">
+                            <!-- Choices will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar: World Info / Map -->
+        <aside class="sidebar glass-container"
+            style="width: auto; border-left: 1px solid var(--border-color); border-right: none;">
+            <div class="glass-filter"></div>
+            <div class="glass-overlay"></div>
+            <div class="glass-specular"></div>
+            <div class="glass-content" style="flex-direction:column; padding:0;">
+                <div class="widget clock-widget">
+                    <div class="time-display" id="clock-display">08:00</div>
+                    <div class="date-display" id="date-display">Spring, Day 1</div>
+                </div>
+
+                <div class="widget">
+                    <h4 style="margin-top:0">Player Money</h4>
+                    <div id="sidebar-money" style="font-size: 1.5rem; color: var(--accent-color);">$0</div>
+                </div>
+
+                <div class="widget">
+                    <h4 style="margin-top:0">Location</h4>
+                    <p id="sidebar-location" style="color: var(--text-secondary)">Unknown Location</p>
+                    <div
+                        style="height: 150px; background: var(--bg-tertiary); border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: center;">
+                        Mini Map
+                    </div>
+                </div>
+
+                <div style="flex:1"></div>
+
+                <div class="widget">
+                    <button class="choice-btn"
+                        style="width: 100%; text-align: center; background: rgba(255,0,0,0.1); border-color: rgba(255,0,0,0.3);"
+                        onclick="openInGameMenu()">Menu</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+    <div class="toast-container" id="toast-container"></div>
+    <script src="../launcher/theme-effects.js"></script>
+    <script src="core.js"></script>
+    <script type="module">
+
+        // OPEN/CLOSE MENUS
+        window.openInGameMenu = () => {
+            document.getElementById('in-game-menu').classList.remove('hidden');
+            toggleSceneVisibility(false);
+        };
+
+        // Parse Query Param
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectParam = urlParams.get('project');
+        const themeParam = urlParams.get('theme');
+
+        // START MENU LOGIC
+        // window.startGame is defined at the bottom of the script to include CC logic.
+
+
+        window.closeInGameMenu = () => {
+            document.getElementById('in-game-menu').classList.add('hidden');
+            toggleSceneVisibility(true);
+        };
+
+        // --- IN-GAME SETTINGS ---
+        const DEFAULT_THEMES = [
+            { id: 'forge', name: 'Forge (Dark)', preview: 'linear-gradient(45deg, #121212, #2d2d2d)' },
+            { id: 'light', name: 'Light (Modern)', preview: 'linear-gradient(135deg, #ffffff, #e2e8f0)' },
+            { id: 'nebula', name: 'Nebula', preview: 'linear-gradient(125deg, #2b1055, #ff00cc)' },
+            { id: 'cyberpunk', name: 'Cyberpunk', preview: 'linear-gradient(45deg, #050505, #ff0055)' },
+            { id: 'nature', name: 'Nature', preview: 'linear-gradient(120deg, #f1f8e9, #7cb342)' },
+            { id: 'midnight', name: 'Midnight', preview: 'linear-gradient(to right, #0f0c29, #ffd700)' },
+            { id: 'matrix', name: 'Matrix', preview: 'linear-gradient(to bottom, #000, #003300)' },
+            { id: 'stars', name: 'Starry Sky', preview: 'linear-gradient(to bottom, #050514, #101030)' }
+        ];
+
+        window.openInGameSettings = () => {
+            const modal = document.getElementById('in-game-settings-modal');
+            modal.classList.remove('hidden');
+
+            // Hide the main menu but keep it tracked
+            document.getElementById('in-game-menu').classList.add('hidden');
+
+            // Populate theme grid
+            renderInGameThemeGrid();
+
+            // Set glass toggle state
+            const glassEnabled = localStorage.getItem('sf-glass-enabled') === 'true';
+            document.getElementById('ingame-glass-toggle').checked = glassEnabled;
+        };
+
+        window.closeInGameSettings = () => {
+            document.getElementById('in-game-settings-modal').classList.add('hidden');
+            document.getElementById('in-game-menu').classList.remove('hidden');
+        };
+
+        function renderInGameThemeGrid() {
+            const grid = document.getElementById('ingame-theme-grid');
+            const currentTheme = localStorage.getItem('sf-theme') || 'forge';
+
+            let customThemes = {};
+            try {
+                customThemes = JSON.parse(localStorage.getItem('sf-custom-themes') || '{}');
+            } catch (e) { console.error('Error loading custom themes', e); }
+
+            grid.innerHTML = '';
+
+            // Render default themes
+            DEFAULT_THEMES.forEach(theme => {
+                const card = createInGameThemeCard(theme, currentTheme === theme.id || currentTheme === `theme-${theme.id}`);
+                grid.appendChild(card);
+            });
+
+            // Render custom themes
+            Object.values(customThemes).forEach(theme => {
+                const card = createInGameThemeCard(
+                    { ...theme, preview: 'linear-gradient(45deg, #333, #666)' },
+                    currentTheme === theme.id,
+                    true
+                );
+                grid.appendChild(card);
+            });
+        }
+
+        function createInGameThemeCard(theme, isActive, isCustom = false) {
+            const div = document.createElement('div');
+            div.style.cssText = `
+                padding: 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                border: 2px solid ${isActive ? 'var(--accent-color)' : 'var(--border-color)'};
+                background: var(--bg-tertiary);
+                transition: all 0.2s;
+                text-align: center;
+            `;
+
+            div.innerHTML = `
+                <div style="height:50px; border-radius:4px; margin-bottom:8px; background:${theme.preview};"></div>
+                <div style="font-size:0.85em; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${theme.name}</div>
+            `;
+
+            div.onmouseenter = () => { div.style.borderColor = 'var(--accent-color)'; };
+            div.onmouseleave = () => { if (!isActive) div.style.borderColor = 'var(--border-color)'; };
+
+            div.onclick = () => {
+                const themeId = isCustom ? theme.id : theme.id;
+                applyGameTheme(themeId);
+                localStorage.setItem('sf-theme', themeId);
+                renderInGameThemeGrid(); // Re-render to update active state
+                showToast(`Theme changed to ${theme.name}`);
+            };
+
+            return div;
+        }
+
+        window.toggleInGameGlassMode = (enabled) => {
+            if (enabled) {
+                document.body.classList.add('glass-mode');
+            } else {
+                document.body.classList.remove('glass-mode');
+            }
+            localStorage.setItem('sf-glass-enabled', enabled);
+        };
+
+        // --- IN-GAME WALKTHROUGH ---
+        let walkthroughData = null;
+        let currentChapterIndex = 0;
+        let currentPageIndex = 0;
+
+        window.openInGameWalkthrough = async () => {
+            const modal = document.getElementById('in-game-walkthrough-modal');
+            modal.classList.remove('hidden');
+
+            // Hide the main menu
+            document.getElementById('in-game-menu').classList.add('hidden');
+
+            // Load walkthrough data
+            await loadWalkthroughData();
+
+            // Add keyboard listener
+            document.addEventListener('keydown', handleWalkthroughKeydown);
+        };
+
+        window.closeInGameWalkthrough = () => {
+            document.getElementById('in-game-walkthrough-modal').classList.add('hidden');
+            document.getElementById('in-game-menu').classList.remove('hidden');
+            document.removeEventListener('keydown', handleWalkthroughKeydown);
+        };
+
+        function handleWalkthroughKeydown(e) {
+            if (document.getElementById('in-game-walkthrough-modal').classList.contains('hidden')) return;
+
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                walkthroughNavigate(-1);
+            } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                walkthroughNavigate(1);
+            } else if (e.key === 'Escape') {
+                closeInGameWalkthrough();
+            }
+        }
+
+        async function loadWalkthroughData() {
+            const chapterList = document.getElementById('walkthrough-chapter-list');
+            const content = document.getElementById('walkthrough-content');
+
+            chapterList.innerHTML = '<div style="color:var(--text-secondary); text-align:center; padding:20px;">Loading...</div>';
+
+            try {
+                if (!projectParam) {
+                    throw new Error('No project loaded');
+                }
+
+                const jsonStr = await window.electronAPI.loadProjectFile(projectParam, 'data.json');
+                if (!jsonStr) throw new Error('No data file');
+
+                const projectData = JSON.parse(jsonStr);
+                walkthroughData = projectData.walkthrough || null;
+
+                if (!walkthroughData || !walkthroughData.chapters || walkthroughData.chapters.length === 0) {
+                    chapterList.innerHTML = '<div style="color:var(--text-secondary); text-align:center; padding:20px;">No walkthrough available</div>';
+                    content.innerHTML = `
+                        <div style="text-align:center; color:var(--text-secondary); padding:40px;">
+                            <p style="font-size:2em;">📖</p>
+                            <p>No walkthrough has been created for this game yet.</p>
+                            <p style="font-size:0.9em; opacity:0.7;">Game creators can add a walkthrough in the Editor under the "Walkthrough" tab.</p>
+                        </div>
+                    `;
+                    updateWalkthroughNav();
+                    return;
+                }
+
+                // Render chapter list
+                renderChapterList();
+
+                // Load first chapter
+                currentChapterIndex = 0;
+                currentPageIndex = 0;
+                loadChapterPage(0, 0);
+
+            } catch (e) {
+                console.error('Failed to load walkthrough:', e);
+                chapterList.innerHTML = '<div style="color:var(--text-secondary); text-align:center; padding:20px;">No walkthrough available</div>';
+            }
+        }
+
+        function renderChapterList() {
+            const chapterList = document.getElementById('walkthrough-chapter-list');
+            chapterList.innerHTML = '';
+
+            walkthroughData.chapters.forEach((chapter, index) => {
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    padding: 12px;
+                    margin-bottom: 5px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    background: ${index === currentChapterIndex ? 'var(--accent-color)' : 'transparent'};
+                    color: ${index === currentChapterIndex ? 'white' : 'var(--text-primary)'};
+                    transition: all 0.2s;
+                    font-size: 0.9em;
+                `;
+                item.textContent = chapter.title || `Chapter ${index + 1}`;
+
+                item.onmouseenter = () => {
+                    if (index !== currentChapterIndex) {
+                        item.style.background = 'var(--bg-secondary)';
+                    }
+                };
+                item.onmouseleave = () => {
+                    if (index !== currentChapterIndex) {
+                        item.style.background = 'transparent';
+                    }
+                };
+
+                item.onclick = () => {
+                    currentChapterIndex = index;
+                    currentPageIndex = 0;
+                    loadChapterPage(index, 0);
+                    renderChapterList();
+                };
+
+                chapterList.appendChild(item);
+            });
+        }
+
+        function loadChapterPage(chapterIdx, pageIdx) {
+            const content = document.getElementById('walkthrough-content');
+            const chapter = walkthroughData.chapters[chapterIdx];
+
+            if (!chapter || !chapter.pages || chapter.pages.length === 0) {
+                content.innerHTML = '<div style="color:var(--text-secondary); text-align:center;">This chapter has no content yet.</div>';
+                updateWalkthroughNav();
+                return;
+            }
+
+            const page = chapter.pages[pageIdx];
+            if (!page) {
+                content.innerHTML = '<div style="color:var(--text-secondary); text-align:center;">Page not found.</div>';
+                updateWalkthroughNav();
+                return;
+            }
+
+            // Render page content (supports HTML)
+            let html = `<h2 style="color:var(--accent-color); margin-top:0; margin-bottom:20px;">${chapter.title || 'Untitled Chapter'}</h2>`;
+
+            // Parse content - handle images and text
+            html += renderWalkthroughContent(page.content || '');
+
+            content.innerHTML = html;
+            content.scrollTop = 0;
+
+            updateWalkthroughNav();
+        }
+
+        function renderWalkthroughContent(content) {
+            // Simple markdown-like parsing for images and basic formatting
+            let html = content;
+
+            // Convert image tags: ![alt](url) or just img paths
+            html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
+                let finalSrc = src;
+                if (projectParam && !src.startsWith('http') && !src.startsWith('data:')) {
+                    finalSrc = `../games/${projectParam}/${src}`;
+                }
+                return `<img src="${finalSrc}" alt="${alt}" style="max-width:100%; border-radius:8px; margin:15px 0; display:block;">`;
+            });
+
+            // Convert line breaks to <br>
+            html = html.replace(/\n/g, '<br>');
+
+            return `<div style="font-size:1.05em;">${html}</div>`;
+        }
+
+        function updateWalkthroughNav() {
+            const prevBtn = document.getElementById('walkthrough-prev');
+            const nextBtn = document.getElementById('walkthrough-next');
+            const indicator = document.getElementById('walkthrough-page-indicator');
+
+            if (!walkthroughData || !walkthroughData.chapters || walkthroughData.chapters.length === 0) {
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                indicator.textContent = 'No pages';
+                return;
+            }
+
+            const chapter = walkthroughData.chapters[currentChapterIndex];
+            const totalPages = chapter?.pages?.length || 1;
+
+            indicator.textContent = `Page ${currentPageIndex + 1} of ${totalPages}`;
+
+            // Check if we can go prev (previous page or previous chapter)
+            const canGoPrev = currentPageIndex > 0 || currentChapterIndex > 0;
+            prevBtn.disabled = !canGoPrev;
+
+            // Check if we can go next (next page or next chapter)
+            const canGoNext = currentPageIndex < totalPages - 1 || currentChapterIndex < walkthroughData.chapters.length - 1;
+            nextBtn.disabled = !canGoNext;
+        }
+
+        window.walkthroughNavigate = (direction) => {
+            if (!walkthroughData || !walkthroughData.chapters) return;
+
+            const chapter = walkthroughData.chapters[currentChapterIndex];
+            const totalPages = chapter?.pages?.length || 1;
+
+            if (direction > 0) {
+                // Next
+                if (currentPageIndex < totalPages - 1) {
+                    currentPageIndex++;
+                } else if (currentChapterIndex < walkthroughData.chapters.length - 1) {
+                    currentChapterIndex++;
+                    currentPageIndex = 0;
+                    renderChapterList();
+                }
+            } else {
+                // Previous
+                if (currentPageIndex > 0) {
+                    currentPageIndex--;
+                } else if (currentChapterIndex > 0) {
+                    currentChapterIndex--;
+                    const prevChapter = walkthroughData.chapters[currentChapterIndex];
+                    currentPageIndex = (prevChapter?.pages?.length || 1) - 1;
+                    renderChapterList();
+                }
+            }
+
+            loadChapterPage(currentChapterIndex, currentPageIndex);
+        };
+
+        let previousModal = null;
+        let canSave = false;
+
+        // Custom prompt function (native prompt() doesn't work in Electron)
+        function customPrompt(title, defaultValue = '') {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('custom-prompt-modal');
+                const input = document.getElementById('custom-prompt-input');
+                const titleEl = document.getElementById('custom-prompt-title');
+                const okBtn = document.getElementById('custom-prompt-ok');
+                const cancelBtn = document.getElementById('custom-prompt-cancel');
+
+                titleEl.textContent = title;
+                input.value = defaultValue;
+                modal.classList.remove('hidden');
+
+                // Hide other modals for better readability, but track state
+                const saveLoadModal = document.getElementById('save-load-modal');
+                const saveLoadWasVisible = saveLoadModal && !saveLoadModal.classList.contains('hidden');
+                if (saveLoadWasVisible) {
+                    saveLoadModal.style.visibility = 'hidden';
+                }
+
+                // Track whether scene was already hidden before we opened prompt
+                const sceneElements = [
+                    document.querySelector('.scene-image'),
+                    document.querySelector('.dialogue-overlay'),
+                    document.getElementById('npc-overlay')
+                ];
+                const sceneWasHidden = sceneElements.some(el => el && el.classList.contains('hidden-by-modal'));
+
+                // Always ensure scene is hidden while prompt is open
+                toggleSceneVisibility(false);
+
+                // Focus input after a short delay to ensure modal is visible and ready
+                // Using requestAnimationFrame + setTimeout to ensure DOM is fully rendered
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        input.focus();
+                        input.select();
+                    }, 100);
+                });
+
+                // Track if already resolved to prevent double-resolve
+                let resolved = false;
+
+                // Cleanup function
+                const cleanup = () => {
+                    if (resolved) return;
+                    resolved = true;
+                    modal.classList.add('hidden');
+                    okBtn.removeEventListener('click', handleOk);
+                    cancelBtn.removeEventListener('click', handleCancel);
+                    input.removeEventListener('keydown', handleKeydown);
+                    modal.removeEventListener('click', handleBackdropClick);
+
+                    // Restore save-load modal visibility
+                    if (saveLoadWasVisible) {
+                        saveLoadModal.style.visibility = 'visible';
+                    }
+
+                    // Only restore scene visibility if:
+                    // 1. Scene was NOT already hidden before prompt opened, AND
+                    // 2. Save-load modal is NOT still open
+                    const saveLoadStillOpen = saveLoadModal && !saveLoadModal.classList.contains('hidden');
+                    if (!sceneWasHidden && !saveLoadStillOpen) {
+                        toggleSceneVisibility(true);
+                    }
+                    // If save-load modal is still open, keep scene hidden
+                };
+
+                const handleOk = (e) => {
+                    e.stopPropagation();
+                    const value = input.value;
+                    cleanup();
+                    resolve(value);
+                };
+
+                const handleCancel = (e) => {
+                    e.stopPropagation();
+                    cleanup();
+                    resolve(null);
+                };
+
+                const handleKeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const value = input.value;
+                        cleanup();
+                        resolve(value);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        cleanup();
+                        resolve(null);
+                    }
+                };
+
+                const handleBackdropClick = (e) => {
+                    // Only close if clicking on the backdrop itself, not the content
+                    if (e.target === modal) {
+                        cleanup();
+                        resolve(null);
+                    }
+                };
+
+                okBtn.addEventListener('click', handleOk);
+                cancelBtn.addEventListener('click', handleCancel);
+                input.addEventListener('keydown', handleKeydown);
+                modal.addEventListener('click', handleBackdropClick);
+            });
+        }
+
+
+        window.openSaveLoadModal = () => {
+            // Check context
+            const ignMenu = document.getElementById('in-game-menu');
+            const startMenu = document.getElementById('start-menu');
+            const gameLayout = document.querySelector('.game-layout');
+
+
+            if (ignMenu && !ignMenu.classList.contains('hidden')) {
+                previousModal = 'in-game-menu';
+                ignMenu.classList.add('hidden');
+                canSave = true; // In game
+            } else if (startMenu && startMenu.style.display !== 'none') {
+                previousModal = 'start-menu';
+                startMenu.style.display = 'none';
+                if (gameLayout) gameLayout.style.display = 'none'; // Hide generic UI layer
+                canSave = false; // At start screen
+            } else {
+                previousModal = null;
+                // Default: if no menu open, are we in game? 
+                // We could check if we have Game Data loaded.
+                if (window.gameEngine.gameData) canSave = true;
+                else canSave = false;
+            }
+
+
+            document.getElementById('save-load-modal').classList.remove('hidden');
+            document.getElementById('sl-modal-title').innerText = "Saves";
+
+            renderSaveSlots();
+            toggleSceneVisibility(false);
+        };
+
+        window.closeSaveLoadModal = () => {
+            document.getElementById('save-load-modal').classList.add('hidden');
+            const gameLayout = document.querySelector('.game-layout');
+
+            if (previousModal === 'in-game-menu') {
+                document.getElementById('in-game-menu').classList.remove('hidden');
+                // Scene remains hidden
+            } else if (previousModal === 'start-menu') {
+                document.getElementById('start-menu').style.display = 'flex';
+                if (gameLayout) gameLayout.style.display = ''; // Restore grid layout
+                // Scene remains hidden behind start menu
+            } else {
+                toggleSceneVisibility(true);
+            }
+            previousModal = null;
+        };
+
+        // SAVE/LOAD LOGIC
+        async function renderSaveSlots() {
+            const container = document.getElementById('save-slots-list');
+            container.innerHTML = '<div style="color:var(--text-secondary); text-align:center;">Loading slots...</div>';
+
+            let html = '';
+
+            for (let i = 1; i <= 6; i++) {
+                const slotFile = `saves/slot_${i}.json`;
+                let slotData = null;
+                try {
+                    const content = await window.electronAPI.loadProjectFile(projectParam, slotFile);
+                    if (content) slotData = JSON.parse(content);
+                } catch (e) {
+                    // console.log(`Slot ${i} empty`);
+                }
+
+                if (slotData) {
+                    const date = new Date(slotData.timestamp);
+                    const timeStr = date.toLocaleString();
+                    html += `
+                    <div class="save-slot">
+                        <div class="save-slot-info">
+                            <h4>${slotData.name || 'Untitled Save'}</h4>
+                            <p>${timeStr}</p>
+                            <p>${slotData.locationName || 'Unknown Location'}</p>
+                        </div>
+                        <div class="save-slot-actions">
+                            <button class="slot-btn" onclick="loadGameFromSlot(${i})">Load</button>
+                            <button class="slot-btn" onclick="onOverwriteSlot(${i})" ${canSave ? '' : 'disabled class="slot-btn disabled"'}>Rewrite</button>
+                            <button class="slot-btn danger" onclick="deleteSaveSlot(${i}, event)">Delete</button>
+                        </div>
+                    </div>`;
+                } else {
+                    html += `
+                    <div class="save-slot empty">
+                        <span style="display:block; margin-bottom:10px;">Empty Slot ${i}</span>
+                         <div class="save-slot-actions">
+                            <button class="slot-btn" onclick="saveGameToSlot(${i}, 'Save ${i}')" ${canSave ? '' : 'disabled class="slot-btn disabled"'}>Save</button>
+                        </div>
+                    </div>`;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        window.onOverwriteSlot = async (slotId) => {
+            const name = await customPrompt("Rewrite save name:", `Save ${slotId}`);
+            if (name) {
+                saveGameToSlot(slotId, name);
+            }
+        };
+
+        window.saveGameToSlot = async (slotId, defaultName) => {
+
+            if (!canSave) {
+                showToast("Cannot save from this context.");
+                return;
+            }
+            if (!projectParam) {
+                showToast("Error: No project loaded.");
+                return;
+            }
+
+            let saveName = defaultName;
+            // If strictly new save (auto name might be fine, but let's ask if called directly from empty)
+            if (defaultName.startsWith('Save')) {
+                const n = await customPrompt("Enter a name for this save:", defaultName);
+                if (n === null) {
+                    return; // User clicked Cancel
+                }
+                saveName = n.trim() || defaultName; // Use default if empty
+            }
+
+            const state = window.gameEngine.getState();
+
+            // Add metadata
+            const saveData = {
+                timestamp: Date.now(),
+                name: saveName,
+                locationName: getCurrentLocationName(),
+                state: state
+            };
+
+            try {
+                const result = await window.electronAPI.saveProjectFile(projectParam, `saves/slot_${slotId}.json`, JSON.stringify(saveData, null, 2));
+                if (result && result.success) {
+                    showToast("Game Saved!");
+                    renderSaveSlots(); // Refresh UI
+                } else {
+                    showToast("Failed to save game: " + (result?.error || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('[SAVE] Exception:', e);
+                showToast("Failed to save game.");
+            }
+        };
+
+        window.loadGameFromSlot = async (slotId) => {
+            if (!projectParam) return;
+
+            try {
+                const content = await window.electronAPI.loadProjectFile(projectParam, `saves/slot_${slotId}.json`);
+                if (!content) {
+                    showToast("Empty slot!");
+                    return;
+                }
+                const data = JSON.parse(content);
+
+                // Hide modals
+                closeSaveLoadModal();
+                closeInGameMenu();
+                document.getElementById('start-menu').style.display = 'none';
+
+                // Restore
+                window.gameEngine.restoreState(data.state);
+                showToast(`Loaded: ${data.name}`);
+
+            } catch (e) {
+                console.error(e);
+                showToast("Failed to load save.");
+            }
+        };
+
+        window.deleteSaveSlot = async (slotId, event) => {
+            event.stopPropagation(); // Don't trigger slot click
+            if (!confirm("Delete this save file?")) return;
+
+            try {
+                // We don't have a direct delete file API in preload exposed as 'deleteFile', only 'deleteProject'.
+                // But we can overwrite with empty or handle it. 
+                // Wait, preload.js ONLY has: launchGame, getProjects, createProject, loadProjectFile, saveProjectFile, saveAsset, deleteProject.
+                // It does NOT have deleteFile.
+                // Workaround: We can't delete the file physically without updating preload.js. 
+                // But the user asked to delete saves.
+                // I should update preload.js if I can, OR just overwrite with valid separate "empty" json or handle empty read.
+                // BUT loadProjectFile returns null if file missing? 
+
+                // Let's add deleteFile to preload.js in next step? 
+                // For now, I'll overwrite with empty string? loadProjectFile might fail JSON parse.
+                // Better: Update preload.js to include deleteFile.
+
+                // I will placeholder this for now and fix preload in next turn if needed, 
+                // BUT I am supposed to do everything now.
+                // Let's check preload again.
+                // It misses 'deleteFile'.
+
+                // For now, I'll save a special marker or just fail.
+                // Actually, I can use node fs if I was in main, but I am in renderer.
+                // I MUST update preload.js to support deleting files.
+                // I'll add a 'deleteProjectFile' to preload.js.
+
+                await window.electronAPI.deleteProjectFile(projectParam, `saves/slot_${slotId}.json`);
+                renderSaveSlots();
+            } catch (e) {
+                showToast("Could not delete save (API missing?)");
+            }
+        };
+
+        function getCurrentLocationName() {
+            const locId = window.gameEngine.state.currentLocation;
+            // We need to look up name in gameData
+            // gameEngine.gameData accessible?
+            if (window.gameEngine.gameData) {
+                if (Array.isArray(window.gameEngine.gameData.locations)) {
+                    const l = window.gameEngine.gameData.locations.find(x => x.id === locId);
+                    return l ? l.name : locId;
+                } else {
+                    const l = window.gameEngine.gameData.locations[locId];
+                    return l ? l.name : locId;
+                }
+            }
+            return locId;
+        }
+
+        // Apply Theme
+        function applyGameTheme(themeName) {
+            if (!themeName) themeName = 'theme-forge';
+
+            // Clear old theme classes (safely handles multiple classes)
+            document.body.className = document.body.className.replace(/theme-[\w-]+/g, '').trim();
+
+            const isCustom = themeName.startsWith('theme-custom-');
+
+            if (isCustom) {
+                // Custom Theme Logic
+                try {
+                    const customThemes = JSON.parse(localStorage.getItem('sf-custom-themes') || '{}');
+                    const customTheme = customThemes[themeName]; // ID is the key
+                    if (customTheme && customTheme.css) {
+                        let style = document.getElementById(`style-${themeName}`);
+                        if (!style) {
+                            style = document.createElement('style');
+                            style.id = `style-${themeName}`;
+                            document.head.appendChild(style);
+                        }
+                        const scopedCSS = customTheme.css.replace(/\.theme-custom/g, `.${themeName}`);
+                        style.innerHTML = scopedCSS;
+                    }
+                } catch (e) { console.error("Failed to load custom theme", e); }
+
+                document.body.classList.add(themeName);
+
+                // Clear Standard Sheet
+                const themeLink = document.getElementById('theme-stylesheet');
+                if (themeLink) themeLink.href = '';
+
+            } else {
+                // File-Based
+                let fileTheme = themeName;
+                if (fileTheme.startsWith('theme-')) {
+                    fileTheme = fileTheme.replace('theme-', '');
+                }
+
+                // Swap Stylesheet
+                const themeLink = document.getElementById('theme-stylesheet');
+                if (themeLink) {
+                    themeLink.href = `../themes/${fileTheme}/style.css`;
+                }
+
+                const className = themeName.startsWith('theme-') ? themeName : `theme-${themeName}`;
+                document.body.classList.add(className);
+            }
+        }
+
+        applyGameTheme(themeParam || localStorage.getItem('sf-theme') || 'theme-forge');
+
+        // Listener for dynamic updates
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'sf-theme' && e.newValue) {
+                applyGameTheme(e.newValue);
+            }
+        });
+
+        // Apply Glass Mode
+        if (urlParams.get('glass') === 'true') {
+            document.body.classList.add('glass-mode');
+        }
+
+        // Connect UI to Engine
+        window.switchTab = (tabName) => {
+            // Hide all
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            // Show target
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            // Activate btn (simple logic, assumes order or adds helper)
+            const btns = document.querySelectorAll('.tab-btn');
+            // Mapping: 0:Inv, 1:Skills, 2:Quests, 3:Rel, 4:Gallery
+            const map = { 'inventory': 0, 'skills': 1, 'quests': 2, 'relations': 3, 'gallery': 4 };
+            if (btns[map[tabName]]) btns[map[tabName]].classList.add('active');
+        };
+
+        window.addEventListener('sf-timeChanged', (e) => {
+            const t = e.detail;
+            const minStr = t.minute.toString().padStart(2, '0');
+            const hourStr = t.hour.toString().padStart(2, '0');
+            const monthName = window.gameEngine.getMonthName(t.month);
+            document.getElementById('clock-display').innerText = `${hourStr}:${minStr}`;
+            document.getElementById('date-display').innerText = `${monthName} ${t.day}, Year ${t.year}`;
+        });
+
+        window.addEventListener('sf-moneyChanged', (e) => {
+            const val = e.detail;
+            document.getElementById('sidebar-money').innerText = `$${val}`;
+            document.getElementById('player-money-display').innerText = `$${val}`;
+        });
+
+        window.addEventListener('sf-npcsUpdated', (e) => {
+            renderCurrentNPCs();
+        });
+
+        window.addEventListener('sf-openNPCInteraction', (e) => {
+            openNPCInteraction(e.detail);
+        });
+
+        // Handle Start Dialogue Tree action
+        window.addEventListener('sf-startDialogueTree', (e) => {
+            const { dialogueId } = e.detail;
+            if (!dialogueId) return;
+
+            // Find the dialogue tree in gameData
+            const dialogues = window.gameEngine.gameData.dialogues;
+            if (!dialogues || !Array.isArray(dialogues)) {
+                console.warn('No dialogues found in game data');
+                return;
+            }
+
+            const dialogueTree = dialogues.find(d => d.id === dialogueId);
+            if (!dialogueTree) {
+                console.warn(`Dialogue tree "${dialogueId}" not found`);
+                return;
+            }
+
+            // Find the root node
+            const rootNode = dialogueTree.nodes.find(n => n.id === dialogueTree.rootNodeId) || dialogueTree.nodes[0];
+            if (!rootNode) {
+                console.warn(`No root node found in dialogue tree "${dialogueId}"`);
+                return;
+            }
+
+            // Open the standalone dialogue tree
+            openStandaloneDialogueTree(dialogueTree, rootNode);
+        });
+
+        window.addEventListener('sf-sceneChanged', (e) => {
+            const scene = e.detail;
+            console.log("SCENE CHANGED:", scene);
+
+            // Update Sidebar Location
+            const locationDisplay = document.getElementById('sidebar-location');
+            if (locationDisplay) {
+                locationDisplay.innerText = scene.name || "Unknown Location";
+            }
+
+            // Update Background and Primary Image
+            // const bgEl = document.querySelector('.scene-image'); // No longer updating main BG
+            const primEl = document.getElementById('primary-scene-image');
+
+            // Check if scene.background exists
+            const bg = scene.background || '#111'; // Fallback
+
+            if (bg.startsWith('#') || bg.startsWith('rgb') || bg.startsWith('linear')) {
+                // If it's a color, we can't show it in IMG src easily unless we use a placeholder or hide it.
+                // For now, let's hide the image box if it's just a color.
+                primEl.style.display = 'none';
+                primEl.src = '';
+            } else {
+                let finalPath = bg;
+                // If project is loaded and path is relative and not going up levels
+                if (projectParam && !bg.startsWith('..') && !bg.startsWith('/') && !bg.startsWith('http') && !bg.startsWith('file:')) {
+                    finalPath = `../games/${projectParam}/${bg}`;
+                }
+
+                primEl.src = finalPath;
+                primEl.style.display = 'block';
+            }
+
+            // Update Text
+            const dialogueText = document.getElementById('dialogue-text');
+            const speakerName = document.getElementById('speaker-name');
+
+            dialogueText.innerText = scene.text || "";
+            speakerName.innerText = "";
+            speakerName.style.opacity = '0.7';
+
+            renderChoices(scene.choices);
+            renderCurrentNPCs(scene.id);
+        });
+
+        window.addEventListener('sf-dialogue', (e) => {
+            const data = e.detail;
+            // Check if we are in NPC modal mode
+            const modal = document.getElementById('npc-interaction-modal');
+            if (modal.style.display === 'flex') {
+                document.getElementById('npc-modal-text').innerText = data.text;
+                // Don't update main dialogue
+                return;
+            }
+
+            document.getElementById('dialogue-text').innerText = data.text;
+            const spk = document.getElementById('speaker-name');
+            spk.innerText = data.speaker || "System";
+            spk.style.opacity = '1';
+        });
+
+        window.addEventListener('sf-inventoryChanged', (e) => {
+            const inv = e.detail;
+            const container = document.getElementById('tab-inventory');
+            if (inv.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; margin-top: 20px;">Empty Inventory</div>';
+                return;
+            }
+            container.innerHTML = inv.map(item => `
+                <div class="item-row">
+                    <div class="item-name">${item.name} <span style="float:right">x${item.quantity}</span></div>
+                    <div class="item-desc">${item.description}</div>
+                </div>
+            `).join('');
+        });
+
+        window.addEventListener('sf-statsChanged', (e) => {
+            const player = e.detail;
+            const skills = player.skills;
+            const container = document.getElementById('tab-skills');
+            const keys = Object.keys(skills);
+
+            if (keys.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; margin-top: 20px;">No Skills Learned</div>';
+                return;
+            }
+
+            container.innerHTML = keys.map(k => {
+                const s = skills[k];
+                return `
+                <div class="skill-row">
+                    <div class="item-name">${s.name} <span style="float:right">Lvl ${s.level}</span></div>
+                    <div style="background:#444; height:4px; border-radius:2px; margin-top:5px;">
+                        <div style="background:var(--accent-color); height:100%; width:${s.progress}%"></div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        });
+
+        window.addEventListener('sf-galleryChanged', (e) => {
+            const gallery = e.detail;
+            const container = document.getElementById('gallery-grid');
+            if (gallery.length > 0) {
+                document.querySelector('#tab-gallery div:first-child').style.display = 'none';
+                container.innerHTML = gallery.map(img => `
+                    <div style="aspect-ratio:1; background:#333; display:flex; align-items:center; justify-content:center; border-radius:4px; overflow:hidden;">
+                         <!-- Ideally this path is dynamic too -->
+                         <img src="../games/demo/assets/${img}.svg" style="width:100%; height:100%; object-fit:cover;" title="${img}">
+                    </div>
+                    `).join('');
+            }
+        });
+
+        window.addEventListener('sf-appearanceChanged', (e) => {
+            const app = e.detail; // player.appearance object
+            const container = document.getElementById('player-pd-content');
+            const placeholder = document.getElementById('pd-placeholder');
+
+            if (!container) return;
+
+            // Check if using Paperdoll system
+            if (app.type === 'paperdoll' && app.paperdollId) {
+                if (placeholder) placeholder.classList.add('hidden');
+                container.innerHTML = '';
+                // Render with 'player' as ownerId for state overrides
+                renderPaperdoll(container, app.paperdollId, 'player');
+                return;
+            }
+
+            // Legacy / Direct Layer Support
+            // If app has keys like 'body', 'clothes' mapped to URLs directly
+            // We can try to render them as layers manually or just clear if empty
+            // For now, let's assume if it's not type='paperdoll', we might have legacy layers
+            // But we don't have a Paperdoll Definition for legacy layers. 
+            // So we can't easily use renderPaperdoll.
+            // Let's just clear.
+
+            container.innerHTML = '';
+            if (placeholder) placeholder.classList.remove('hidden');
+        });
+
+        window.addEventListener('sf-relationsChanged', (e) => {
+            const rels = e.detail;
+            const container = document.getElementById('tab-relations');
+            const keys = Object.keys(rels);
+            if (keys.length === 0) return;
+
+            container.innerHTML = keys.map(k => {
+                const r = rels[k];
+                return `
+                <div class="skill-row"> <!-- Reuse style -->
+                    <div class="item-name">${r.name}</div>
+                    <div class="item-desc">${r.status} (${r.value})</div>
+                </div>
+                `;
+            }).join('');
+        });
+
+        // Override engine.notify
+        const originalNotify = window.gameEngine.notify.bind(window.gameEngine);
+        window.gameEngine.notify = (msg) => {
+            originalNotify(msg);
+            showToast(msg);
+        };
+
+        function renderCurrentNPCs(sceneId) {
+            const locId = sceneId || window.gameEngine.state.currentLocation;
+            if (!locId) return;
+
+            const npcs = window.gameEngine.getNPCsAtLocation(locId);
+            const container = document.getElementById('npc-overlay');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            npcs.forEach(npc => {
+                // Visibility Check
+                if (npc.visibility) {
+                    try {
+                        const game = window.gameEngine;
+                        if (!new Function('game', 'return ' + npc.visibility)(game)) return;
+                    } catch (e) { console.warn("NPC Vis Error", e); }
+                }
+
+                const el = document.createElement('div');
+                el.className = 'npc-marker';
+                el.style.pointerEvents = 'auto';
+                el.style.cursor = 'pointer';
+                el.style.padding = '10px';
+                el.style.background = 'rgba(0,0,0,0.7)';
+                el.style.border = '1px solid var(--accent-color)';
+                el.style.borderRadius = '8px';
+                el.style.color = 'white';
+                el.style.display = 'flex';
+                el.style.flexDirection = 'column';
+                el.style.alignItems = 'center';
+                el.style.minWidth = '80px';
+
+                el.innerHTML = `
+                    <div style="font-size:24px;">👤</div>
+                    <div style="font-size:12px; font-weight:bold; margin-top:5px;">${npc.name}</div>
+                `;
+
+                el.onclick = () => openNPCInteraction(npc);
+                container.appendChild(el);
+            });
+        }
+
+        function openNPCInteraction(npc) {
+            // Show Modal
+            const modal = document.getElementById('npc-interaction-modal');
+            const modalImg = document.getElementById('npc-modal-image');
+            const modalPlaceholder = document.getElementById('npc-img-placeholder');
+            const modalName = document.getElementById('npc-modal-name');
+            const modalText = document.getElementById('npc-modal-text');
+            const modalStats = document.getElementById('npc-modal-stats');
+            const modalQuests = document.getElementById('npc-modal-quests');
+
+            modal.style.display = 'flex';
+            modalName.innerText = npc.name;
+            modalText.innerText = `You are interacting with ${npc.name}.`;
+            toggleSceneVisibility(false);
+
+            // Image / Paperdoll Logic
+            const modalPdRoot = document.getElementById('npc-modal-pd-root');
+
+            // Default reset
+            modalImg.style.display = 'none';
+            modalPdRoot.style.display = 'none';
+            if (modalPlaceholder) modalPlaceholder.style.display = 'none';
+
+            if (npc.appearance && npc.appearance.type === 'paperdoll') {
+                // RENDER PAPERDOLL
+                if (npc.appearance.paperdollId) {
+                    modalPdRoot.style.display = 'block';
+                    renderPaperdoll(modalPdRoot, npc.appearance.paperdollId, npc.id);
+                } else {
+                    if (modalPlaceholder) modalPlaceholder.style.display = 'block';
+                }
+            } else {
+                // STATIC IMAGE
+                const appPath = (npc.appearance && npc.appearance.path) ? npc.appearance.path : npc.image;
+
+                if (appPath) {
+                    let finalPath = appPath;
+                    if (projectParam && !finalPath.startsWith('..') && !finalPath.startsWith('http')) {
+                        finalPath = `../games/${projectParam}/${finalPath}`;
+                    }
+                    modalImg.src = finalPath;
+                    modalImg.style.display = 'block';
+                } else {
+                    // Try Convention
+                    const conventionPath = `../games/${projectParam}/assets/characters/${npc.id}.png`;
+                    modalImg.src = conventionPath;
+                    modalImg.style.display = 'block';
+
+                    // Simple error fallback
+                    modalImg.onerror = () => {
+                        modalImg.style.display = 'none';
+                        if (modalPlaceholder) modalPlaceholder.style.display = 'block';
+                    };
+                }
+            }
+
+            // Stats Logic
+            if (modalStats) {
+                modalStats.innerHTML = '';
+                if (npc.stats) {
+                    Object.entries(npc.stats).forEach(([k, v]) => {
+                        const row = document.createElement('div');
+                        row.innerHTML = `<span style="opacity:0.7; text-transform:capitalize;">${k}:</span> <span style="float:right; font-weight:bold;">${v}</span>`;
+                        modalStats.appendChild(row);
+                    });
+                } else {
+                    modalStats.innerHTML = '<div style="opacity:0.4; font-style:italic;">No stats available</div>';
+                }
+            }
+
+            // Quests Logic (Placeholder)
+            if (modalQuests) modalQuests.innerHTML = '<div style="opacity:0.4; font-style:italic;">No active quests</div>';
+
+            const choices = [];
+
+            // 1. Talk
+            if (npc.dialogue && npc.dialogue.length > 0) {
+                choices.push({
+                    text: `Talk to ${npc.name}`,
+                    action: 'script',
+                    script: () => startDialogueTree(npc, true)
+                });
+            } else {
+                choices.push({
+                    text: "Talk",
+                    action: 'dialogue',
+                    content: `Hello! I am ${npc.name}.`,
+                    speaker: npc.name
+                });
+            }
+
+            // 2. Shop
+            if (npc.shop && npc.shop.enabled) {
+                choices.push({
+                    text: "Trade",
+                    action: 'script',
+                    script: () => {
+                        window.openShop(npc);
+                        closeNPCInteraction(false); // Close NPC interaction but keep scene hidden
+                    }
+                });
+            }
+
+            // 3. Leave (Removed)
+
+            // Clean render for modal choices (Block style)
+            renderModalChoices(choices);
+        }
+
+        // Shop Functions
+        window.openShop = (npc) => {
+            const modal = document.getElementById('shop-modal');
+            const list = document.getElementById('shop-items');
+            const title = document.getElementById('shop-title');
+
+            modal.style.display = 'flex';
+            toggleSceneVisibility(false);
+            title.innerText = `${npc.name}'s Shop`;
+            list.innerHTML = 'Loading...';
+
+            // Get items
+            const shopItems = npc.shop ? npc.shop.items : [];
+            // assuming shopItems is array of {id, price}
+
+            // Need to lookup item details from gameData.items
+            // gameData.items is map or array? In core.js it's object map usually
+            const allItems = window.gameEngine.gameData.items;
+
+            if (!shopItems || shopItems.length === 0) {
+                list.innerHTML = '<div style="color:#aaa; text-align:center;">Out of Stock</div>';
+                return;
+            }
+
+            list.innerHTML = shopItems.map(shopItem => {
+                // Find item detail
+                // If items is Array (Editor format)
+                let itemDef = null;
+                if (Array.isArray(allItems)) {
+                    itemDef = allItems.find(i => i.id === shopItem.id);
+                } else {
+                    itemDef = allItems[shopItem.id];
+                }
+
+                if (!itemDef) return ''; // Skip invalid
+
+                return `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-tertiary); padding:15px; border-radius:6px; border:1px solid var(--border-color);">
+                    <div>
+                        <div style="font-weight:bold; color:var(--text-primary);">${itemDef.name}</div>
+                        <div style="font-size:0.8rem; color:var(--text-secondary);">${itemDef.description || ''}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="color:var(--accent-color);">$${shopItem.price}</span>
+                        <button class="choice-btn" style="padding:5px 15px;" onclick="buyItemFromShop('${itemDef.id}', '${itemDef.name.replace(/'/g, "\\'")}', '${(itemDef.description || '').replace(/'/g, "\\'")}', ${shopItem.price})">Buy</button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        };
+
+        window.buyItemFromShop = (id, name, desc, price) => {
+            const success = window.gameEngine.buyItem({ id, name, description: desc }, price);
+            if (success) {
+                // Re-render handled by update? money updates already.
+                // Maybe play sound
+            }
+        };
+
+        window.closeShop = () => {
+            document.getElementById('shop-modal').style.display = 'none';
+        };
+
+        // Dedicated helper for modal choices to match block style
+        function renderModalChoices(choices) {
+            const container = document.getElementById('npc-modal-choices');
+            if (!container) return;
+            container.innerHTML = '';
+
+            // We need a stable ID context for modal choices.
+            // Usually we are in an NPC interaction. 
+            // The choices passed here are generated dynamically. 
+            // We need to attach an ID to them IF they need tracking.
+            // For now, we rely on the `choice.id` if present, or hash text? 
+            // Actually, `processDialogueNode` creates the choices. 
+            // Let's assume uniqueKey defaults to `text` if no ID, which is risky but better than nothing for dialogues.
+            // OR use a session-based index? No, must persist.
+            // Let's try to grab ID from choice if it was copied from data.
+
+            choices.forEach((choice, i) => {
+                // Generate Key if not present.
+                // Note: Dialogue options in editor don't have explicit IDs usually, just index in array.
+                // We might need to look at `processDialogueNode` to pass IDs.
+                // For now, let's use: npcName_ChoiceText (Weak key but works for unique text)
+                const uniqueKey = choice.id || `modal_${choice.text.replace(/\s+/g, '')}_${i}`;
+
+                const status = checkChoiceAvailability(choice, uniqueKey);
+                if (!status.visible) return;
+
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+
+                // Layout styles needed for the specific look of the modal choices
+                // We keep layout but trust class for colors
+                btn.style.width = '100%';
+                btn.style.height = 'auto';
+                btn.style.flex = '0 0 auto';
+                btn.style.padding = '15px 20px';
+                btn.style.textAlign = 'left';
+                btn.style.display = 'flex';
+                btn.style.alignItems = 'center';
+                btn.style.justifyContent = 'space-between';
+                btn.style.fontSize = '1rem';
+                btn.style.fontWeight = '500';
+
+                // Colors removed to inherit from choice-btn class (which uses theme variables)
+
+                if (status.disabled) {
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                    // btn.title = status.reason; // Tooltip
+                    btn.innerHTML = `<span>${choice.text} <small>(${status.reason})</small></span> <span style="opacity:0.3">Locked</span>`;
+                } else {
+                    // Text and arrow
+                    btn.innerHTML = `<span>${choice.text}</span> <span style="opacity:0.3; font-size:1.2em">›</span>`;
+
+                    // Hover effects handled by CSS class now
+                    // We can add a simple listener just for the arrow if we want it to light up, 
+                    // but 'choice-btn:hover' changes text color to white, so the arrow (opacity 0.3) will also become white (but dim).
+                    // To make the arrow 'glow', we can manually adjust opacity on hover.
+
+                    btn.onmouseover = () => {
+                        const arrow = btn.querySelector('span:last-child');
+                        if (arrow) arrow.style.opacity = '1';
+                    };
+                    btn.onmouseout = () => {
+                        const arrow = btn.querySelector('span:last-child');
+                        if (arrow) arrow.style.opacity = '0.3';
+                    };
+
+                    if (choice.script) {
+                        btn.onclick = () => {
+                            window.gameEngine.incrementInteractionCount(uniqueKey);
+                            choice.script();
+                        };
+                    } else if (choice.action === 'dialogue') {
+                        btn.onclick = () => {
+                            window.gameEngine.incrementInteractionCount(uniqueKey);
+                            const modalText = document.getElementById('npc-modal-text');
+                            if (modalText) modalText.innerText = choice.content;
+                        }
+                    } else if (choice.action === 'start_dialogue') {
+                        btn.onclick = () => {
+                            window.gameEngine.incrementInteractionCount(uniqueKey);
+                            // Close NPC modal first
+                            closeNPCInteraction(false);
+                            // Process the start_dialogue action through the engine
+                            window.gameEngine.processAction(choice);
+                        };
+                    }
+                }
+
+                container.appendChild(btn);
+            });
+        }
+
+        function closeNPCInteraction(restoreScene = true) {
+            const modal = document.getElementById('npc-interaction-modal');
+            modal.style.display = 'none';
+            if (restoreScene) toggleSceneVisibility(true);
+        }
+        window.closeNPCInteraction = closeNPCInteraction;
+
+        function startDialogueTree(npc, inModal = false) {
+            const root = npc.dialogue.find(n => n.id === 'start') || npc.dialogue[0];
+            if (!root) return;
+            processDialogueNode(npc, root, inModal);
+        }
+
+        // ===== Visual Novel Dialogue System =====
+
+        // Render paperdoll composite for dialogue speaker
+        function renderDialoguePaperdoll(container, paperdollId, characterId) {
+            container.innerHTML = '';
+
+            // Get paperdoll definition
+            const paperdolls = window.gameEngine.gameData.paperdolls || [];
+            const paperdoll = paperdolls.find(p => p.id === paperdollId);
+
+            if (!paperdoll || !paperdoll.layers) {
+                console.warn(`Paperdoll "${paperdollId}" not found`);
+                return;
+            }
+
+            // Get character state for customizations (uses characterAppearance from game state)
+            const appearanceState = window.gameEngine.state.characterAppearance || {};
+            const charState = appearanceState[characterId] || {};
+
+            console.log('[renderDialoguePaperdoll]', {
+                paperdollId,
+                characterId,
+                layerCount: paperdoll.layers.length,
+                charState: charState
+            });
+
+            // Don't override container dimensions - let CSS class handle them
+            // Just ensure position is relative for absolute children
+            container.style.position = 'relative';
+
+            let imagesRendered = 0;
+
+            // Render each layer
+            paperdoll.layers.forEach((layer, layerIndex) => {
+                if (!layer.images || layer.images.length === 0) return;
+
+                // Get selected image index (from state or default)
+                let selectedImgIdx = layer.selectedImageIdx || 0;
+                let selectedColorwayIdx = layer.selectedColorwayIdx !== undefined ? layer.selectedColorwayIdx : -1;
+
+                // Override from character state if exists
+                // Character state uses 'img' and 'col' (from character creation)
+                if (charState[layer.name]) {
+                    if (charState[layer.name].img !== undefined) {
+                        selectedImgIdx = charState[layer.name].img;
+                    }
+                    if (charState[layer.name].col !== undefined) {
+                        selectedColorwayIdx = charState[layer.name].col;
+                    }
+                }
+
+                const imageData = layer.images[selectedImgIdx];
+                if (!imageData) {
+                    console.log(`[renderDialoguePaperdoll] Layer "${layer.name}" - no imageData at index ${selectedImgIdx}`);
+                    return;
+                }
+
+                // Determine which image to show (colorway or base)
+                let imagePath = imageData.base;
+                if (selectedColorwayIdx >= 0 && imageData.colorways && imageData.colorways[selectedColorwayIdx]) {
+                    imagePath = imageData.colorways[selectedColorwayIdx];
+                }
+
+                if (!imagePath) {
+                    console.log(`[renderDialoguePaperdoll] Layer "${layer.name}" - no imagePath`);
+                    return;
+                }
+
+                // Build full path
+                let fullPath = imagePath;
+                if (projectParam && !imagePath.includes('games/') && !imagePath.startsWith('http')) {
+                    fullPath = `../games/${projectParam}/${imagePath}`;
+                }
+
+                console.log(`[renderDialoguePaperdoll] Layer "${layer.name}" -> ${fullPath}`);
+
+                // Create image element
+                const img = document.createElement('img');
+                img.src = fullPath;
+                img.style.position = 'absolute';
+                img.style.top = '0';
+                img.style.left = '0';
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'contain';
+                img.style.zIndex = layer.zIndex !== undefined ? layer.zIndex : layerIndex;
+
+                container.appendChild(img);
+                imagesRendered++;
+            });
+
+            console.log(`[renderDialoguePaperdoll] Rendered ${imagesRendered} layer images`);
+        }
+
+        let currentDialogueTree = null;
+        let currentDialogueNode = null;
+        let dialogueHistory = []; // For back navigation
+
+        function openStandaloneDialogueTree(dialogueTree, startNode) {
+            currentDialogueTree = dialogueTree;
+            currentDialogueNode = startNode;
+            dialogueHistory = [];
+
+            const screen = document.getElementById('dialogue-screen');
+            const bgEl = document.getElementById('dialogue-bg');
+
+            // Set background image from dialogue tree
+            if (dialogueTree.backgroundImage) {
+                let bgPath = dialogueTree.backgroundImage;
+                if (projectParam && !bgPath.includes('games/') && !bgPath.startsWith('http')) {
+                    bgPath = `../games/${projectParam}/${bgPath}`;
+                }
+                bgEl.style.backgroundImage = `url('${bgPath}')`;
+            } else {
+                bgEl.style.backgroundImage = '';
+                bgEl.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
+            }
+
+            // Hide the game scene
+            toggleSceneVisibility(false);
+
+            // Show dialogue screen
+            screen.classList.add('active');
+
+            // Process the first node
+            renderDialogueNode(startNode);
+        }
+
+        function renderDialogueNode(node) {
+            currentDialogueNode = node;
+
+            const textEl = document.getElementById('vn-dialogue-text');
+            const speakerNameEl = document.getElementById('dialogue-speaker-name');
+            const speakerImgEl = document.getElementById('dialogue-speaker-img');
+            const speakerPdEl = document.getElementById('dialogue-speaker-pd');
+            const sceneImgEl = document.getElementById('dialogue-scene-img');
+            const choicesContainer = document.getElementById('dialogue-choices');
+            const textbox = document.getElementById('dialogue-textbox');
+            const nextBtn = document.getElementById('dialogue-next-btn');
+            const backBtn = document.getElementById('dialogue-back-btn');
+
+            // Set dialogue text
+            textEl.innerText = node.text || '';
+
+            // Determine speaker
+            let speakerName = 'Narrator';
+            let speakerData = null;
+
+            if (node.speaker) {
+                if (node.speaker === 'player' || node.speaker.toLowerCase() === 'player') {
+                    speakerName = window.gameEngine.state.player.name || 'Player';
+                    // Get player appearance from config
+                    const playerData = window.gameEngine.gameData.player || {};
+                    const playerConfig = playerData.config || {};
+                    const playerState = window.gameEngine.state.player;
+
+                    speakerData = {
+                        type: 'player',
+                        id: 'player',
+                        visualType: playerConfig.visualType || 'paperdoll',
+                        paperdollId: playerConfig.paperdollId,
+                        image: playerConfig.defaultImage || playerState.image,
+                        appearance: playerState.appearance
+                    };
+                } else if (node.speaker === 'narrator' || node.speaker.toLowerCase() === 'narrator') {
+                    speakerName = 'Narrator';
+                } else {
+                    // Look up NPC (case-insensitive)
+                    const npc = (window.gameEngine.gameData.characters || []).find(c =>
+                        c.id === node.speaker || c.id.toLowerCase() === node.speaker.toLowerCase()
+                    );
+                    if (npc) {
+                        speakerName = npc.name;
+                        speakerData = npc;
+                    } else {
+                        speakerName = node.speaker; // Use raw ID as name
+                    }
+                }
+            }
+
+            speakerNameEl.innerText = speakerName;
+
+            // Reset speaker visuals
+            speakerImgEl.style.display = 'none';
+            speakerPdEl.style.display = 'none';
+            speakerPdEl.innerHTML = '';
+
+            // Show speaker image/paperdoll
+            if (node.image) {
+                // Node-specific image overrides everything
+                let imgPath = node.image;
+                if (projectParam && !imgPath.includes('games/') && !imgPath.startsWith('http')) {
+                    imgPath = `../games/${projectParam}/${imgPath}`;
+                }
+                speakerImgEl.src = imgPath;
+                speakerImgEl.style.display = 'block';
+            } else if (speakerData) {
+                // Check if using paperdoll
+                const isPaperdoll = speakerData.visualType === 'paperdoll' ||
+                    (speakerData.appearance && speakerData.appearance.type === 'paperdoll');
+                const paperdollId = speakerData.paperdollId ||
+                    (speakerData.appearance && speakerData.appearance.paperdollId);
+
+                console.log('[Dialogue Speaker Debug]', {
+                    speakerId: speakerData.id,
+                    visualType: speakerData.visualType,
+                    paperdollId: paperdollId,
+                    isPaperdoll: isPaperdoll,
+                    speakerData: speakerData
+                });
+
+                if (isPaperdoll && paperdollId) {
+                    // Render paperdoll composite
+                    console.log('[Dialogue] Rendering paperdoll:', paperdollId, 'for', speakerData.id);
+                    renderDialoguePaperdoll(speakerPdEl, paperdollId, speakerData.id);
+                    speakerPdEl.style.display = 'block';
+                } else {
+                    // Use static image
+                    const imgPath = speakerData.image || (speakerData.appearance && speakerData.appearance.path);
+                    if (imgPath) {
+                        let finalPath = imgPath;
+                        if (projectParam && !finalPath.includes('games/') && !finalPath.startsWith('http')) {
+                            finalPath = `../games/${projectParam}/${finalPath}`;
+                        }
+                        speakerImgEl.src = finalPath;
+                        speakerImgEl.style.display = 'block';
+                    }
+                }
+            }
+
+            // Handle scene/CG image (separate from speaker)
+            if (node.sceneImage) {
+                let scenePath = node.sceneImage;
+                if (projectParam && !scenePath.includes('games/') && !scenePath.startsWith('http')) {
+                    scenePath = `../games/${projectParam}/${scenePath}`;
+                }
+                sceneImgEl.src = scenePath;
+                sceneImgEl.style.display = 'block';
+            } else {
+                sceneImgEl.style.display = 'none';
+            }
+
+            // Handle paperdoll override for player
+            if (node.paperdollOverride && window.gameEngine) {
+                Object.entries(node.paperdollOverride).forEach(([layerName, settings]) => {
+                    const targetId = node.speaker === 'player' ? 'player' : (node.speaker || 'player');
+                    window.gameEngine.modifyPaperdoll(targetId, layerName, settings);
+                });
+            }
+
+            // Handle choices
+            const choices = node.choices || [];
+
+            if (choices.length === 0) {
+                // Linear dialogue - click to continue or end
+                choicesContainer.style.display = 'none';
+                textbox.style.cursor = 'pointer';
+                nextBtn.style.display = 'flex';
+            } else if (choices.length === 1) {
+                // Single path - auto-continue on click
+                choicesContainer.style.display = 'none';
+                textbox.style.cursor = 'pointer';
+                nextBtn.style.display = 'flex';
+            } else {
+                // Multiple choices - show buttons
+                choicesContainer.style.display = 'flex';
+                textbox.style.cursor = 'default';
+                nextBtn.style.display = 'none';
+
+                renderDialogueChoices(choices);
+            }
+
+            // Back button
+            backBtn.style.display = dialogueHistory.length > 0 ? 'flex' : 'none';
+        }
+
+        function renderDialogueChoices(choices) {
+            const container = document.getElementById('dialogue-choices');
+            container.innerHTML = '';
+
+            choices.forEach((choice, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'dialogue-choice-btn';
+                btn.innerHTML = `<span>${choice.text}</span><span class="arrow">›</span>`;
+
+                btn.onclick = () => {
+                    // Add current node to history before navigating
+                    dialogueHistory.push(currentDialogueNode);
+
+                    if (choice.targetNodeId) {
+                        const nextNode = currentDialogueTree.nodes.find(n => n.id === choice.targetNodeId);
+                        if (nextNode) {
+                            renderDialogueNode(nextNode);
+                        } else {
+                            closeDialogueScreen();
+                        }
+                    } else {
+                        closeDialogueScreen();
+                    }
+                };
+
+                container.appendChild(btn);
+            });
+        }
+
+        function advanceDialogue() {
+            if (!currentDialogueNode) return;
+
+            const choices = currentDialogueNode.choices || [];
+
+            if (choices.length === 0) {
+                // End of dialogue
+                closeDialogueScreen();
+            } else if (choices.length === 1) {
+                // Auto-advance to the single next node
+                dialogueHistory.push(currentDialogueNode);
+
+                const nextChoice = choices[0];
+                if (nextChoice.targetNodeId) {
+                    const nextNode = currentDialogueTree.nodes.find(n => n.id === nextChoice.targetNodeId);
+                    if (nextNode) {
+                        renderDialogueNode(nextNode);
+                    } else {
+                        closeDialogueScreen();
+                    }
+                } else {
+                    closeDialogueScreen();
+                }
+            }
+            // If multiple choices, do nothing (user must click a choice button)
+        }
+        window.advanceDialogue = advanceDialogue;
+
+        function goBackDialogue() {
+            if (dialogueHistory.length === 0) return;
+
+            const prevNode = dialogueHistory.pop();
+            renderDialogueNode(prevNode);
+        }
+        window.goBackDialogue = goBackDialogue;
+
+        function closeDialogueScreen() {
+            const screen = document.getElementById('dialogue-screen');
+            screen.classList.remove('active');
+
+            currentDialogueTree = null;
+            currentDialogueNode = null;
+            dialogueHistory = [];
+
+            toggleSceneVisibility(true);
+        }
+        window.closeDialogueScreen = closeDialogueScreen;
+
+        function processDialogueNode(npc, node, inModal = false) {
+            // Update Text
+            if (inModal) {
+                document.getElementById('npc-modal-text').innerText = node.text;
+            } else {
+                window.gameEngine.dialogue(node.text, npc.name);
+            }
+
+            // --- VISUAL UPDATES ---
+            // 1. Static Image Override
+            if (node.image && inModal) {
+                const modalImg = document.getElementById('npc-modal-image');
+                const modalPlaceholder = document.getElementById('npc-img-placeholder');
+                const pdRoot = document.getElementById('npc-modal-pd-root');
+
+                // If using static image override, hide PD, show Image
+                if (modalImg) {
+                    // Simple path resolution
+                    let finalPath = node.image;
+                    if (projectParam && !finalPath.includes('games/') && !finalPath.startsWith('http')) {
+                        finalPath = `../games/${projectParam}/${finalPath}`;
+                    }
+                    modalImg.src = finalPath;
+                    modalImg.style.display = 'block';
+                    if (pdRoot) pdRoot.style.display = 'none';
+                    if (modalPlaceholder) modalPlaceholder.style.display = 'none';
+                }
+            }
+
+            // 2. Paperdoll Configuration Override
+            if (node.paperdollOverride) {
+                // Determine target: node.speaker might be 'player' or 'narrator' or default to NPC
+                let targetId = npc.id;
+                if (node.speaker && node.speaker.toLowerCase() === 'player') targetId = 'player';
+
+                // Apply overrides statefully
+                // This permanently updates the character's appearance in the engine state
+                // until changed again. This fulfills "outfit override" request.
+                if (window.gameEngine) {
+                    Object.entries(node.paperdollOverride).forEach(([layerName, settings]) => {
+                        window.gameEngine.modifyPaperdoll(targetId, layerName, settings);
+                    });
+                }
+            }
+
+            const choices = (node.options || []).map(opt => {
+                return {
+                    text: opt.text,
+                    action: 'script',
+                    script: () => {
+                        // Logic for next
+                        if (opt.next) {
+                            const nextNode = npc.dialogue.find(n => n.id === opt.next);
+                            if (nextNode) processDialogueNode(npc, nextNode, inModal);
+                            else {
+                                // End
+                                if (inModal) openNPCInteraction(npc); // Return to root
+                                else {
+                                    const loc = window.gameEngine.gameData.locations[window.gameEngine.state.currentLocation];
+                                    renderChoices(loc ? loc.choices : []);
+                                }
+                            }
+                        } else {
+                            // End
+                            if (inModal) openNPCInteraction(npc); // Return to root
+                            else {
+                                const loc = window.gameEngine.gameData.locations[window.gameEngine.state.currentLocation];
+                                renderChoices(loc ? loc.choices : []);
+                            }
+                        }
+                    }
+                };
+            });
+            // If no options, add a 'back' or 'end' option
+            if (choices.length === 0) {
+                choices.push({
+                    text: "Back",
+                    action: 'script',
+                    script: () => {
+                        if (inModal) openNPCInteraction(npc);
+                    }
+                });
+            }
+
+            if (inModal) {
+                renderModalChoices(choices);
+            } else {
+                renderChoices(choices, 'choices-container');
+            }
+        }
+
+        function showToast(msg) {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.innerText = msg;
+            c.appendChild(t);
+            setTimeout(() => {
+                t.style.opacity = '0';
+                setTimeout(() => t.remove(), 300);
+            }, 3000);
+        }
+
+        function renderChoices(choices, containerId = 'choices-container') {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            if (!choices) return;
+
+            const locId = window.gameEngine.state.currentLocation;
+
+            choices.forEach((choice, index) => {
+                // Generate Unique Key: SceneId_Index. 
+                // NOTE: This relies on index stability. If user inserts a choice above, keys shift. 
+                // Ideal is explicit IDs, but for now this works for static scenes.
+                const uniqueKey = `${locId}_choice_${index}`;
+
+                const status = checkChoiceAvailability(choice, uniqueKey);
+                if (!status.visible) return;
+
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerText = choice.text + (status.disabled ? " (Locked)" : "");
+
+                if (status.disabled) {
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                    btn.title = status.reason || "Unavailable";
+                    // No click handler
+                } else {
+                    // If it's a dynamic choice (function script), execute it
+                    if (choice.script) {
+                        btn.onclick = () => {
+                            window.gameEngine.incrementInteractionCount(uniqueKey);
+                            choice.script();
+                        };
+                    } else if (choice.action === 'dialogue') {
+                        btn.onclick = () => {
+                            window.gameEngine.incrementInteractionCount(uniqueKey);
+                            window.gameEngine.processAction(choice);
+                        };
+                    } else {
+                        // Default: Use Engine index logic (World Choices)
+                        btn.onclick = () => {
+                            window.gameEngine.incrementInteractionCount(uniqueKey);
+                            gameEngine.handleChoice(index);
+                        };
+                    }
+                }
+
+                container.appendChild(btn);
+            });
+        }
+
+
+        // --- Helper for Limitation Checks ---
+        function checkChoiceAvailability(choice, uniqueKey) {
+            const game = window.gameEngine;
+
+            // 1. Requirement Variable
+            if (choice.reqVar) {
+                const varVal = game.state.variables ? game.state.variables[choice.reqVar] : undefined;
+                let reqMet = false;
+
+                // Compare with reqVal
+                if (choice.reqVal !== undefined) {
+                    reqMet = (varVal === choice.reqVal);
+                } else {
+                    // Just check truthiness
+                    reqMet = !!varVal;
+                }
+
+                if (!reqMet) {
+                    if (choice.hideIfUnavailable) return { visible: false };
+                    return { visible: true, disabled: true, reason: "Requirement not met" };
+                }
+            }
+
+            // 2. Max Uses
+            if (choice.maxUses && choice.maxUses > 0) {
+                const uses = game.getInteractionCount(uniqueKey);
+                if (uses >= choice.maxUses) {
+                    if (choice.hideAfterMax) return { visible: false };
+                    return { visible: true, disabled: true, reason: "Max uses reached" };
+                }
+            }
+
+            // 3. Condition (JS Expression) - Legacy support + Condition field
+            if (choice.condition) {
+                try {
+                    const isVisible = new Function('game', 'return ' + choice.condition)(game);
+                    if (!isVisible) return { visible: false };
+                } catch (e) {
+                    console.warn("Condition error:", e);
+                }
+            }
+
+            return { visible: true, disabled: false };
+        }
+
+
+        // --- Multi-Currency Shop & Wallet Overrides ---
+
+        window.openShop = (npc) => {
+            const modal = document.getElementById('shop-modal');
+            const list = document.getElementById('shop-items');
+            const title = document.getElementById('shop-title');
+            const playerMoneyDisplay = document.getElementById('player-money-display');
+
+            modal.style.display = 'flex';
+            toggleSceneVisibility(false);
+            title.innerText = `${npc.name}'s Shop`;
+            list.innerHTML = 'Loading...';
+
+            // Determine Shop Currency
+            const currencyId = (npc.shop && npc.shop.currencyId) ? npc.shop.currencyId : 'default';
+            const currencies = window.gameEngine.gameData.currencies || [];
+            let currencySymbol = '$';
+            let playerBalance = 0;
+
+            if (currencyId === 'default') {
+                currencySymbol = '$';
+                playerBalance = window.gameEngine.state.player.money;
+            } else {
+                const c = currencies.find(curr => curr.id === currencyId);
+                currencySymbol = c ? c.symbol : currencyId;
+
+                const wallet = window.gameEngine.state.player.wallet || {};
+                playerBalance = wallet[currencyId] || 0;
+            }
+
+            // Update Header Money Display for this specific shop context
+            playerMoneyDisplay.innerText = `${currencySymbol}${playerBalance}`;
+
+            // Get items
+            // Data Structure: npc.shop.items is Array of { id, price, quantity, condition }
+            // Legacy Migration (Just in case runtime encounters old data)
+            let shopItems = npc.shop ? npc.shop.items : [];
+            if (npc.shop && npc.shop.inventory && (!shopItems || shopItems.length === 0)) {
+                shopItems = npc.shop.inventory.map(id => ({ id: id, price: 10, quantity: -1 }));
+            }
+
+            const allItems = window.gameEngine.gameData.items;
+
+            if (!shopItems || shopItems.length === 0) {
+                list.innerHTML = '<div style="color:#aaa; text-align:center;">Out of Stock</div>';
+                return;
+            }
+
+            let html = '';
+            shopItems.forEach((shopItem, index) => {
+                // 1. Check Condition
+                if (shopItem.condition) {
+                    try {
+                        const game = window.gameEngine;
+                        if (!new Function('game', 'return ' + shopItem.condition)(game)) return; // Skip
+                    } catch (e) { console.warn("Shop Condition Error", e); }
+                }
+
+                let itemDef = null;
+                if (Array.isArray(allItems)) {
+                    itemDef = allItems.find(i => i.id === shopItem.id);
+                } else {
+                    itemDef = allItems[shopItem.id];
+                }
+
+                if (!itemDef) return;
+
+                const priceDisplay = `${currencySymbol}${shopItem.price}`;
+
+                // Stock Logic
+                let stockDisplay = '';
+                let isSoldOut = false;
+                if (shopItem.quantity !== undefined && shopItem.quantity !== -1) {
+                    if (shopItem.quantity <= 0) {
+                        isSoldOut = true;
+                        stockDisplay = `<span style="color:red; font-size:0.8em;">Sold Out</span>`;
+                    } else {
+                        stockDisplay = `<span style="color:#aaa; font-size:0.8em;">Stock: ${shopItem.quantity}</span>`;
+                    }
+                } else {
+                    stockDisplay = `<span style="color:#aaa; font-size:0.8em;">∞</span>`; // Infinite
+                }
+
+                html += `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-tertiary); padding:15px; border-radius:6px; border:1px solid var(--border-color); opacity:${isSoldOut ? 0.6 : 1}">
+                    <div>
+                        <div style="font-weight:bold; color:var(--text-primary);">${itemDef.name}</div>
+                        <div style="font-size:0.8rem; color:var(--text-secondary);">${itemDef.description || ''}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        ${stockDisplay}
+                        <span style="color:var(--accent-color);">${priceDisplay}</span>
+                        <button class="choice-btn" 
+                            style="padding:5px 15px; ${isSoldOut ? 'cursor:not-allowed; opacity:0.5;' : ''}" 
+                            onclick="${isSoldOut ? '' : `buyItemFromShop('${npc.id}', ${index}, '${itemDef.id}', ${shopItem.price}, '${currencyId}')`}">
+                            ${isSoldOut ? 'Sold' : 'Buy'}
+                        </button>
+                    </div>
+                </div>
+                `;
+            });
+
+            if (html === '') html = '<div style="color:#aaa; text-align:center;">Nothing of interest available.</div>';
+            list.innerHTML = html;
+        };
+
+        window.buyItemFromShop = (npcId, itemIndex, itemId, price, currencyId) => {
+            // Find NPC and Item to update stock
+            const npc = window.gameEngine.gameData.characters.find(c => c.id === npcId);
+            if (!npc || !npc.shop || !npc.shop.items) return;
+
+            const shopItem = npc.shop.items[itemIndex];
+            if (!shopItem) return;
+
+            // Check Stock again
+            if (shopItem.quantity !== -1 && shopItem.quantity <= 0) {
+                window.gameEngine.notify("Item is sold out!");
+                return;
+            }
+
+            // Find Item Def for Name/Desc
+            const allItems = window.gameEngine.gameData.items;
+            let itemDef = Array.isArray(allItems) ? allItems.find(i => i.id === itemId) : allItems[itemId];
+            if (!itemDef) return;
+
+            const success = window.gameEngine.buyItem({ id: itemId, name: itemDef.name, description: itemDef.description }, price, currencyId);
+
+            if (success) {
+                // Decrement Stock
+                if (shopItem.quantity !== -1) {
+                    shopItem.quantity--;
+                    // Re-render shop to show updated stock
+                    window.openShop(npc);
+                }
+
+                // Audio or Toast handled by `buyItem` notify
+            }
+        };
+
+        window.closeShop = () => {
+            document.getElementById('shop-modal').style.display = 'none';
+            toggleSceneVisibility(true);
+        };
+
+        // Helper to toggle scene visibility behind modals
+
+        function toggleSceneVisibility(visible) {
+            // Target the main containers of content to ensure everything is hidden/shown cleanly
+            const elements = [
+                document.querySelector('.scene-image'), // Background layer
+                document.querySelector('.dialogue-overlay'), // Contains primary image, dialogue box, and choices
+                document.getElementById('npc-overlay') // Miniature NPCs standing in the scene
+            ];
+
+            elements.forEach(el => {
+                if (el) {
+                    if (visible) {
+                        el.classList.remove('hidden-by-modal');
+                    } else {
+                        el.classList.add('hidden-by-modal');
+                    }
+                }
+            });
+        }
+
+        function renderSidebarWallet(wallet) {
+            const container = document.getElementById('sidebar-money');
+            if (!container) return;
+
+            const currencies = window.gameEngine.gameData.currencies || [];
+            const defaultMoney = window.gameEngine.state.player.money;
+
+            let html = `<div style="margin-bottom:2px"><span style="opacity:0.7">$</span> ${defaultMoney}</div>`;
+
+            if (wallet) {
+                Object.keys(wallet).forEach(id => {
+                    if (id === 'default') return;
+                    const amount = wallet[id];
+                    if (amount === 0) return;
+
+                    const currDef = currencies.find(c => c.id === id);
+                    const symbol = currDef ? currDef.symbol : id;
+                    const name = currDef ? currDef.name : id;
+
+                    html += `<div style="margin-bottom:2px; font-size:0.9em;" title="${name}"><span style="opacity:0.7">${symbol}</span> ${amount}</div>`;
+                });
+            }
+            container.innerHTML = html;
+        }
+
+        window.addEventListener('sf-walletChanged', (e) => {
+            renderSidebarWallet(e.detail);
+        });
+
+        // Extend moneyChanged to also render wallet (for default currency updates)
+        window.addEventListener('sf-moneyChanged', () => {
+            const wallet = window.gameEngine.state.player.wallet || {};
+            renderSidebarWallet(wallet);
+        });
+
+        // Initialize Game
+        async function init() {
+            let gameData;
+
+            // 1. Try to load from data.json (Project Mode)
+            if (projectParam) {
+                console.log("Loading Project:", projectParam);
+                try {
+                    const jsonStr = await window.electronAPI.loadProjectFile(projectParam, 'data.json');
+                    if (jsonStr) {
+                        const projectData = JSON.parse(jsonStr);
+                        // ADAPTER for Editor Format -> Engine Format
+                        // We want to serve 'locations' to the engine.
+                        // Convert Array to Map for easier lookup, or let Engine handle it.
+                        // Let's create a unified 'locations' map.
+                        const locsMap = {};
+
+                        // 1. Load Locations (Base)
+                        if (Array.isArray(projectData.locations)) {
+                            projectData.locations.forEach(l => {
+                                locsMap[l.id] = { ...l };
+                            });
+                        }
+
+                        // 2. Merge Scenes (Story) into Locations if they share ID, or add new
+                        // This supports the user's request to merge them.
+                        if (Array.isArray(projectData.story)) {
+                            projectData.story.forEach(s => {
+                                if (locsMap[s.id]) {
+                                    // Merge: Scene data overlaps/extends location data
+                                    locsMap[s.id] = { ...locsMap[s.id], ...s };
+                                } else {
+                                    // New location defined by scene
+                                    locsMap[s.id] = { name: s.id, images: {}, ...s };
+                                }
+                            });
+                        }
+
+                        // Determine start location
+                        // Check for location with ID "start", or name "start" (case-insensitive)
+                        let startLoc = null;
+                        const keys = Object.keys(locsMap);
+
+                        console.log('[Init] Looking for start location in:', Object.entries(locsMap).map(([id, l]) => ({ id, name: l.name })));
+
+                        // First: check for ID = "start"
+                        if (keys.includes('start')) {
+                            startLoc = 'start';
+                            console.log('[Init] Found start by ID');
+                        } else {
+                            // Second: check for name = "start" (case-insensitive)
+                            for (const [id, loc] of Object.entries(locsMap)) {
+                                if (loc.name && loc.name.toLowerCase() === 'start') {
+                                    startLoc = id;
+                                    console.log('[Init] Found start by name:', id, loc.name);
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Fallback: first location
+                        if (!startLoc && keys.length > 0) {
+                            startLoc = keys[0];
+                            console.log('[Init] Using fallback (first location):', startLoc);
+                        }
+
+                        console.log('[Init] Final start location:', startLoc);
+
+                        gameData = {
+                            meta: { title: projectParam },
+                            initialState: {
+                                currentLocation: startLoc,
+                                variables: projectData.variables || {} // Load global variables
+                            },
+                            locations: locsMap,
+                            characters: projectData.characters || [],
+                            paperdolls: projectData.paperdolls || [],
+                            items: projectData.items || [],
+                            currencies: projectData.currencies || [],
+                            dialogues: projectData.dialogues || [], // Dialogue trees
+                            settings: projectData.settings || {},
+                            player: projectData.player || {}
+                        };
+
+                        // Apply Basic Settings immediately if possible
+                        if (gameData.settings) {
+                            if (gameData.settings.title) {
+                                document.querySelector('#start-menu h1').innerText = gameData.settings.title;
+                            }
+                            // Bg handling could go here or in start menu logic
+                        }
+                    } else if (projectParam !== 'demo') {
+                        alert("Could not load project data.");
+                    }
+                } catch (e) {
+                    console.error(e);
+                    if (projectParam !== 'demo') alert("Error loading project.");
+                }
+            }
+
+            // 2. Fallback to Legacy Demo (story.js) if no data loaded and it is demo
+            if (!gameData && (projectParam === 'demo' || !projectParam)) {
+                console.log("Fallback: Loading legacy demo story.js");
+                try {
+                    // Use absolute path or correct relative path
+                    const mod = await import('../games/demo/story.js');
+                    gameData = mod.default;
+                    if (!gameData.characters) gameData.characters = [];
+                } catch (e) {
+                    console.error("Failed to load demo:", e);
+                    alert("Failed to load demo game.");
+                }
+            }
+
+            if (gameData) {
+                window.gameEngine.loadGame(gameData);
+            }
+        }
+
+
+        // --- Character Creation Logic ---
+
+        let ccState = {
+            points: 10,
+            stats: {},
+            appearance: {}
+        };
+
+        window.switchCCTab = (tabName) => {
+            document.querySelectorAll('.cc-view').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('#character-creation-modal .tab-btn').forEach(el => el.classList.remove('active'));
+
+            const view = document.getElementById(`cc-view-${tabName}`);
+            const btn = document.getElementById(`cc-tab-${tabName}`);
+
+            if (view) view.classList.remove('hidden');
+            if (btn) btn.classList.add('active');
+        };
+
+        window.openCharacterCreation = () => {
+            const modal = document.getElementById('character-creation-modal');
+            modal.classList.remove('hidden');
+            document.querySelector('.game-layout').style.display = 'none'; // HIDE LAYOUT
+            if (typeof toggleSceneVisibility === 'function') toggleSceneVisibility(false);
+
+            // Get Config
+            const pConfig = window.gameEngine.gameData.player || {};
+            const config = pConfig.config || {};
+            const stats = pConfig.stats || [];
+
+            // Setup Toggles
+            const secs = config.openSections || {};
+            if (secs.identity === false) document.getElementById('cc-tab-identity').style.display = 'none';
+            if (secs.appearance === false) document.getElementById('cc-tab-appearance').style.display = 'none';
+            if (secs.stats === false) document.getElementById('cc-tab-stats').style.display = 'none';
+            if (secs.cheats === false || !secs.cheats) document.getElementById('cc-tab-cheats').style.display = 'none';
+
+            // Init Config State
+            ccState.points = config.startPoints !== undefined ? config.startPoints : 10;
+            ccState.stats = {};
+            updatePointDisplay();
+
+            // Init Appearance State
+            ccState.appearance = {};
+            // Pre-fill defaults from PD definition if available
+            if (config.visualType === 'paperdoll' && config.paperdollId) {
+                const pd = (window.gameEngine.gameData.paperdolls || []).find(p => p.id === config.paperdollId);
+                if (pd) {
+                    pd.layers.forEach(l => {
+                        ccState.appearance[l.name] = {
+                            img: l.selectedImageIdx !== undefined ? l.selectedImageIdx : 0,
+                            col: l.selectedColorwayIdx !== undefined ? l.selectedColorwayIdx : -1
+                        };
+                    });
+                }
+                // Sync to runtime for preview
+                if (!window.gameEngine.state.characterAppearance) window.gameEngine.state.characterAppearance = {};
+                window.gameEngine.state.characterAppearance['creation_preview'] = JSON.parse(JSON.stringify(ccState.appearance));
+            }
+
+            // Render Stats
+            const statsList = document.getElementById('cc-stats-list');
+            statsList.innerHTML = '';
+            stats.forEach(stat => {
+                ccState.stats[stat.id] = stat.default || 0;
+                if (stat.type === 'number') {
+                    const div = document.createElement('div');
+                    div.className = 'setting-row';
+                    div.style.marginBottom = '10px';
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label style="color:var(--text-primary); text-transform:capitalize;">${stat.name}</label>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <button class="secondary-btn" onclick="modifyCCStat('${stat.id}', -1, ${stat.cost})" style="width:30px; height:30px; display:flex; align-items:center; justify-content:center;">-</button>
+                                <span id="cc-stat-val-${stat.id}" style="width:30px; text-align:center; color:var(--text-primary);">${stat.default}</span>
+                                <button class="secondary-btn" onclick="modifyCCStat('${stat.id}', 1, ${stat.cost})" style="width:30px; height:30px; display:flex; align-items:center; justify-content:center;">+</button>
+                            </div>
+                        </div>
+                     `;
+                    statsList.appendChild(div);
+                }
+            });
+
+            // Render Appearance UI
+            const appContent = document.getElementById('cc-appearance-content');
+            appContent.innerHTML = '';
+
+            if (config.visualType === 'paperdoll') {
+                // Container logic
+                const wrapper = document.createElement('div');
+                wrapper.style.display = 'flex';
+                wrapper.style.gap = '20px';
+
+                // Preview Box
+                const previewBox = document.createElement('div');
+                previewBox.id = 'cc-pd-preview';
+                previewBox.style.width = '300px';
+                previewBox.style.height = '500px';
+                previewBox.style.border = '1px solid var(--border-color)';
+                previewBox.style.background = 'var(--bg-tertiary)';
+                previewBox.style.position = 'relative';
+                previewBox.style.overflow = 'hidden';
+
+                // Controls Box (Right Side)
+                const controlsBox = document.createElement('div');
+                controlsBox.style.flex = '1';
+                controlsBox.style.display = 'flex';
+                controlsBox.style.flexDirection = 'column';
+                controlsBox.style.gap = '10px';
+                controlsBox.style.maxHeight = '500px';
+                controlsBox.style.overflowY = 'auto';
+
+                // Render Controls for Customizable Layers
+                const customLayers = config.customizableLayers || [];
+                const pd = (window.gameEngine.gameData.paperdolls || []).find(p => p.id === config.paperdollId);
+
+                if (pd && customLayers.length > 0) {
+                    const removableLayers = config.removableLayers || [];
+                    let hasAnyOptions = false;
+
+                    customLayers.forEach(layerName => {
+                        const layerDef = pd.layers.find(l => l.name === layerName);
+                        if (!layerDef || !layerDef.images || layerDef.images.length === 0) return;
+                        hasAnyOptions = true;
+
+                        // Determine if this layer can be removed (hidden)
+                        const canBeRemoved = removableLayers.includes(layerName);
+
+                        // Get current state
+                        const currentImgIdx = ccState.appearance[layerName] ? ccState.appearance[layerName].img : 0;
+                        const isHidden = currentImgIdx < 0;
+                        const visibleImgIdx = isHidden ? 0 : currentImgIdx;
+                        const currentImg = layerDef.images[visibleImgIdx] || layerDef.images[0];
+                        const hasColorways = !isHidden && currentImg && currentImg.colorways && currentImg.colorways.length > 0;
+                        const hasMultipleImages = layerDef.images.length > 1;
+
+                        // Build the control panel for this layer
+                        const controlRow = document.createElement('div');
+                        controlRow.className = 'cc-layer-control';
+                        controlRow.style.cssText = 'background: rgba(0, 50, 0, 0.6); border: 1px solid var(--accent-color, #00ff00); border-radius: 8px; padding: 12px; margin-bottom: 10px;';
+
+                        // Layer Title
+                        const titleEl = document.createElement('div');
+                        titleEl.style.cssText = 'color: var(--accent-color, #00ff00); font-weight: bold; text-transform: uppercase; margin-bottom: 10px; font-size: 0.9em; letter-spacing: 1px;';
+                        titleEl.innerText = layerName;
+                        controlRow.appendChild(titleEl);
+
+                        // Image/Visibility Selector Row - ALWAYS show if removable OR has multiple images
+                        if (canBeRemoved || hasMultipleImages) {
+                            const imgCount = layerDef.images.length;
+                            // If removable, we add 1 for the "None" option
+                            const totalOptions = canBeRemoved ? imgCount + 1 : imgCount;
+                            // Display index: if hidden = 0 (None), else offset by 1 if removable
+                            let displayIdx;
+                            let displayText;
+
+                            if (isHidden) {
+                                displayIdx = 0;
+                                displayText = 'None';
+                            } else if (canBeRemoved) {
+                                displayIdx = currentImgIdx + 2; // 0-based image + 1 for "None" + 1 for 1-indexing
+                                displayText = hasMultipleImages ? `${currentImgIdx + 1}` : 'On';
+                            } else {
+                                displayIdx = currentImgIdx + 1;
+                                displayText = `${displayIdx}`;
+                            }
+
+                            const imgRow = document.createElement('div');
+                            imgRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;';
+
+                            const imgLabel = document.createElement('span');
+                            imgLabel.style.cssText = 'color: var(--text-secondary, #aaa); font-size: 0.85em;';
+                            imgLabel.innerText = canBeRemoved && !hasMultipleImages ? 'Visibility' : 'Current Image';
+
+                            const imgControls = document.createElement('div');
+                            imgControls.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+
+                            const fullDisplayText = isHidden ? 'None' : (hasMultipleImages ? `${currentImgIdx + 1}/${imgCount}` : 'On');
+                            const counterDisplay = canBeRemoved ? `${displayText} ${isHidden ? 0 : currentImgIdx + 1 + (canBeRemoved ? 1 : 0)}/${totalOptions}` : fullDisplayText;
+
+                            imgControls.innerHTML = `
+                                <button class="cc-nav-btn" onclick="cycleCCLayer('${layerName}', -1)" style="background: var(--bg-tertiary, #1a1a1a); border: 1px solid var(--accent-color, #00ff00); color: var(--accent-color, #00ff00); width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">◀</button>
+                                <span id="cc-layer-img-${layerName}" style="color: var(--text-primary, #fff); min-width: 50px; text-align: center; font-family: monospace;">${isHidden ? 'None' : fullDisplayText}</span>
+                                <button class="cc-nav-btn" onclick="cycleCCLayer('${layerName}', 1)" style="background: var(--bg-tertiary, #1a1a1a); border: 1px solid var(--accent-color, #00ff00); color: var(--accent-color, #00ff00); width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">▶</button>
+                            `;
+
+                            imgRow.appendChild(imgLabel);
+                            imgRow.appendChild(imgControls);
+                            controlRow.appendChild(imgRow);
+                        }
+
+                        // Colorway Selector Row (only if layer is visible and colorways exist)
+                        // Check if this image has colorways (for dynamic show/hide later)
+                        const baseImg = layerDef.images[0];
+                        const anyColorways = layerDef.images.some(img => img.colorways && img.colorways.length > 0);
+
+                        if (anyColorways) {
+                            const colCount = hasColorways ? currentImg.colorways.length : 0;
+                            const currentColIdx = ccState.appearance[layerName] ? ccState.appearance[layerName].col : -1;
+                            const colDisplayIdx = currentColIdx + 2;
+                            const totalColOptions = colCount + 1;
+
+                            const colRow = document.createElement('div');
+                            colRow.id = `cc-layer-colrow-${layerName}`;
+                            colRow.style.cssText = `display: ${hasColorways ? 'flex' : 'none'}; align-items: center; justify-content: space-between;`;
+
+                            const colLabel = document.createElement('span');
+                            colLabel.style.cssText = 'color: var(--text-secondary, #aaa); font-size: 0.85em;';
+                            colLabel.innerText = 'Colorway';
+
+                            const colControls = document.createElement('div');
+                            colControls.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+
+                            const colDisplayText = currentColIdx === -1 ? 'Base' : `Var ${currentColIdx + 1}`;
+
+                            colControls.innerHTML = `
+                                <button class="cc-nav-btn" onclick="cycleCCColorway('${layerName}', -1)" style="background: var(--bg-tertiary, #1a1a1a); border: 1px solid var(--accent-color, #00ff00); color: var(--accent-color, #00ff00); width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">◀</button>
+                                <span id="cc-layer-col-${layerName}" style="color: var(--text-primary, #fff); min-width: 60px; text-align: center; font-family: monospace;">${colDisplayText} ${colDisplayIdx}/${totalColOptions}</span>
+                                <button class="cc-nav-btn" onclick="cycleCCColorway('${layerName}', 1)" style="background: var(--bg-tertiary, #1a1a1a); border: 1px solid var(--accent-color, #00ff00); color: var(--accent-color, #00ff00); width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">▶</button>
+                            `;
+
+                            colRow.appendChild(colLabel);
+                            colRow.appendChild(colControls);
+                            controlRow.appendChild(colRow);
+                        }
+
+                        controlsBox.appendChild(controlRow);
+                    });
+
+                    if (!hasAnyOptions) {
+                        controlsBox.innerHTML = '<div style="opacity:0.5; padding: 20px; text-align: center;">No customizable options available for the selected layers.</div>';
+                    }
+                } else {
+                    controlsBox.innerHTML = '<div style="opacity:0.5; padding: 20px; text-align: center;">No customizable options available.</div>';
+                }
+
+                wrapper.appendChild(previewBox);
+                wrapper.appendChild(controlsBox);
+                appContent.appendChild(wrapper);
+
+                if (config.paperdollId) {
+                    setTimeout(() => {
+                        if (typeof renderPaperdoll === 'function') {
+                            renderPaperdoll(document.getElementById('cc-pd-preview'), config.paperdollId, 'creation_preview');
+                        }
+                    }, 100);
+                }
+            } else if (config.visualType === 'image') {
+                appContent.innerHTML = '<div style="text-align:center; color:gray; padding:20px;">Image selection not implemented. Using default.</div>';
+            } else {
+                appContent.innerHTML = '<div style="text-align:center; color:gray; padding:20px;">No visual customization enabled.</div>';
+            }
+
+            // Select first available tab
+            if (secs.identity !== false) window.switchCCTab('identity');
+            else if (secs.appearance !== false) window.switchCCTab('appearance');
+            else if (secs.stats !== false) window.switchCCTab('stats');
+        };
+
+        window.cycleCCLayer = (layerName, dir) => {
+            const pConfig = window.gameEngine.gameData.player.config;
+            const pdId = pConfig.paperdollId;
+            const pd = window.gameEngine.gameData.paperdolls.find(p => p.id === pdId);
+            if (!pd) return;
+
+            const layerDef = pd.layers.find(l => l.name === layerName);
+            if (!layerDef || !layerDef.images || layerDef.images.length === 0) return;
+
+            const count = layerDef.images.length;
+            const canBeRemoved = (pConfig.removableLayers || []).includes(layerName);
+            const hasMultipleImages = count > 1;
+
+            let current = ccState.appearance[layerName] ? ccState.appearance[layerName].img : 0;
+
+            // Determine min value: -1 if removable, 0 otherwise
+            const minVal = canBeRemoved ? -1 : 0;
+            const maxVal = count - 1;
+
+            current += dir;
+
+            // Wrap around logic
+            if (current > maxVal) current = minVal;
+            if (current < minVal) current = maxVal;
+
+            // Update State
+            if (!ccState.appearance[layerName]) ccState.appearance[layerName] = { img: 0, col: -1 };
+            ccState.appearance[layerName].img = current;
+            ccState.appearance[layerName].col = -1; // Reset colorway when changing image
+
+            // Update Image Counter Display
+            const imgLabelEl = document.getElementById(`cc-layer-img-${layerName}`);
+            if (imgLabelEl) {
+                if (current < 0) {
+                    imgLabelEl.innerText = 'None';
+                } else if (hasMultipleImages) {
+                    imgLabelEl.innerText = `${current + 1}/${count}`;
+                } else {
+                    imgLabelEl.innerText = 'On';
+                }
+            }
+
+            // Update Colorway Row visibility and content
+            const colRowEl = document.getElementById(`cc-layer-colrow-${layerName}`);
+            if (colRowEl) {
+                if (current >= 0) {
+                    const newImg = layerDef.images[current];
+                    if (newImg && newImg.colorways && newImg.colorways.length > 0) {
+                        colRowEl.style.display = 'flex';
+                        const colLabelEl = document.getElementById(`cc-layer-col-${layerName}`);
+                        if (colLabelEl) {
+                            const totalColOptions = newImg.colorways.length + 1;
+                            colLabelEl.innerText = `Base 1/${totalColOptions}`;
+                        }
+                    } else {
+                        colRowEl.style.display = 'none';
+                    }
+                } else {
+                    colRowEl.style.display = 'none';
+                }
+            }
+
+            // Update Runtime & Render
+            if (window.gameEngine.state.characterAppearance['creation_preview'][layerName]) {
+                window.gameEngine.state.characterAppearance['creation_preview'][layerName].img = current;
+                window.gameEngine.state.characterAppearance['creation_preview'][layerName].col = -1;
+            }
+            renderPaperdoll('cc-pd-preview', pdId, 'creation_preview');
+        };
+
+        window.cycleCCColorway = (layerName, dir) => {
+            const pConfig = window.gameEngine.gameData.player.config;
+            const pdId = pConfig.paperdollId;
+            const pd = window.gameEngine.gameData.paperdolls.find(p => p.id === pdId);
+            if (!pd) return;
+
+            const layerDef = pd.layers.find(l => l.name === layerName);
+            if (!layerDef || !layerDef.images || layerDef.images.length === 0) return;
+
+            // Get current image
+            const imgIdx = ccState.appearance[layerName] ? ccState.appearance[layerName].img : 0;
+            const currentImg = layerDef.images[imgIdx];
+            if (!currentImg || !currentImg.colorways || currentImg.colorways.length === 0) return;
+
+            const colCount = currentImg.colorways.length;
+            // Range: -1 (Base) to colCount-1
+            let current = ccState.appearance[layerName] ? ccState.appearance[layerName].col : -1;
+
+            current += dir;
+            if (current >= colCount) current = -1; // Wrap to Base
+            if (current < -1) current = colCount - 1; // Wrap to last colorway
+
+            // Update State
+            if (!ccState.appearance[layerName]) ccState.appearance[layerName] = { img: 0, col: -1 };
+            ccState.appearance[layerName].col = current;
+
+            // Update Colorway Display
+            const colDisplayIdx = current + 2; // -1 -> 1, 0 -> 2, etc.
+            const totalColOptions = colCount + 1;
+            const colDisplayText = current === -1 ? 'Base' : `Var ${current + 1}`;
+
+            const colLabelEl = document.getElementById(`cc-layer-col-${layerName}`);
+            if (colLabelEl) colLabelEl.innerText = `${colDisplayText} ${colDisplayIdx}/${totalColOptions}`;
+
+            // Update Runtime & Render
+            if (window.gameEngine.state.characterAppearance['creation_preview'][layerName]) {
+                window.gameEngine.state.characterAppearance['creation_preview'][layerName].col = current;
+            }
+            renderPaperdoll('cc-pd-preview', pdId, 'creation_preview');
+        };
+
+        window.modifyCCStat = (id, delta, cost) => {
+            const currentVal = ccState.stats[id];
+            cost = cost || 1;
+
+            if (delta > 0) {
+                if (ccState.points >= cost) {
+                    ccState.stats[id]++;
+                    ccState.points -= cost;
+                }
+            } else {
+                if (ccState.stats[id] > 0) {
+                    ccState.stats[id]--;
+                    ccState.points += cost;
+                }
+            }
+            document.getElementById(`cc-stat-val-${id}`).innerText = ccState.stats[id];
+            updatePointDisplay();
+        };
+
+        function updatePointDisplay() {
+            const el = document.getElementById('cc-points-display');
+            if (el) el.innerText = ccState.points;
+        }
+
+        window.finishCharacterCreation = () => {
+            const name = document.getElementById('cc-name').value || "Player";
+            const pronouns = document.getElementById('cc-pronouns').value;
+
+            const p = window.gameEngine.gameState.player;
+            p.name = name;
+            p.pronouns = pronouns;
+
+            // Save Stats
+            Object.entries(ccState.stats).forEach(([k, v]) => {
+                p.stats[k] = v;
+                if (!p.baseStats) p.baseStats = {};
+                p.baseStats[k] = v;
+            });
+
+            // Save Appearance
+            const pConfig = window.gameEngine.gameData.player.config;
+            if (pConfig.visualType === 'paperdoll' && pConfig.paperdollId) {
+                if (!p.appearance) p.appearance = {};
+                p.appearance.type = 'paperdoll';
+                p.appearance.paperdollId = pConfig.paperdollId;
+
+                // Save override state to game state 
+                window.gameEngine.state.characterAppearance['player'] = JSON.parse(JSON.stringify(ccState.appearance));
+
+                // Trigger Sidebar Update (Assuming sidebar paperdoll uses 'player' ID)
+                // sidebar in game.html uses #player-pd-content. 
+                // We need to trigger a render there.
+                // The 'appearanceChanged' event usually triggers this provided the logic in 'sf-appearanceChanged' handles it.
+                // In game.html line 1285: renderPaperdoll(container, app.paperdollId, 'player');
+                // So emitting appearanceChanged with the player appearance object (containing type & id) is enough.
+
+                window.gameEngine.emit('appearanceChanged', p.appearance);
+            } else if (pConfig.visualType === 'image') {
+                if (!p.appearance) p.appearance = {};
+                p.appearance.type = 'image';
+                p.appearance.path = pConfig.defaultImage;
+                window.gameEngine.emit('appearanceChanged', p.appearance);
+            }
+
+            document.getElementById('character-creation-modal').classList.add('hidden');
+            document.querySelector('.game-layout').style.display = 'grid'; // SHOW LAYOUT
+            if (typeof toggleSceneVisibility === 'function') toggleSceneVisibility(true);
+            window.gameEngine.emit('statsChanged', p);
+            window.gameEngine.recalculateStats(); // Recalc derived stats
+        };
+
+        window.cancelCharacterCreation = () => {
+            document.getElementById('character-creation-modal').classList.add('hidden');
+            document.getElementById('start-menu').style.display = 'flex';
+            document.querySelector('.game-layout').style.display = 'none'; // KEEP HIDDEN
+        };
+
+        window.startGame = (isNew) => {
+            if (!window.gameEngine.gameData) {
+                console.warn("Game data not loaded yet.");
+                showToast("Loading...");
+                return;
+            }
+
+            const menu = document.getElementById('start-menu');
+
+            if (isNew) {
+                const p = window.gameEngine.gameData.player;
+                const config = p ? p.config : null;
+                console.log("Start Game: Player Config:", config);
+
+                if (config && config.creationEnabled) {
+                    // Hide menu AND open modal
+                    menu.style.display = 'none';
+                    // Ensure layout is hidden during creation
+                    document.querySelector('.game-layout').style.display = 'none';
+                    window.openCharacterCreation();
+                } else {
+                    // Just play - hide menu and show game
+                    menu.style.display = 'none';
+                    document.querySelector('.game-layout').style.display = 'grid'; // SHOW LAYOUT
+                    toggleSceneVisibility(true);
+                }
+            } else {
+                console.log("Load logic placeholder");
+            }
+        };
+
+        // --- Paperdoll Rendering ---
+        window.renderPaperdoll = (containerOrId, paperdollId, ownerId) => {
+            const container = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId;
+            if (!container) return;
+            container.innerHTML = ''; // Clear
+
+            // Find Paperdoll Definition
+            const pdDef = (window.gameEngine.gameData.paperdolls || []).find(p => p.id === paperdollId);
+            if (!pdDef) {
+                container.innerHTML = '<div style="color:red; font-size:0.8em;">PD Def Missing</div>';
+                return;
+            }
+
+            // Get Runtime State for this owner (NPC or Player)
+            const ownerState = window.gameEngine.state.characterAppearance || {};
+            const myState = ownerState[ownerId] || {}; // { layerName: { imgIdx: 0, colorIdx: 0 } }
+
+            // Render Layers in order (index 0 = bottom? No, typically UI list was top->bottom. 
+            // In renderer.js we rendered preview as array order (0 first).
+            // HTML order: Last child is on top (zIndex behavior approx if absolute).
+            // So we render 0..N.
+
+            pdDef.layers.forEach(layer => {
+                // Find visible image
+                // Check state override or default
+                let imgIdx = layer.selectedImageIdx || 0;
+                let colIdx = layer.selectedColorwayIdx || -1;
+
+                // Override?
+                if (myState[layer.name]) {
+                    if (myState[layer.name].img !== undefined) imgIdx = myState[layer.name].img;
+                    if (myState[layer.name].col !== undefined) colIdx = myState[layer.name].col;
+                }
+
+                if (!layer.images || layer.images.length === 0) return;
+
+                // Bounds check
+                if (imgIdx < 0 || imgIdx >= layer.images.length) return; // Hidden or invalid
+
+                const imgObj = layer.images[imgIdx];
+                let src = imgObj.base;
+                if (colIdx > -1 && imgObj.colorways && imgObj.colorways[colIdx]) {
+                    src = imgObj.colorways[colIdx];
+                }
+
+                if (!src) return;
+
+                const finalPath = `../games/${projectParam || 'demo'}/${src}`;
+
+                const imgEl = document.createElement('img');
+                imgEl.src = finalPath;
+                imgEl.style.position = 'absolute';
+                imgEl.style.top = '0';
+                imgEl.style.left = '0';
+                imgEl.style.width = '100%';
+                imgEl.style.height = '100%';
+                imgEl.style.objectFit = 'contain';
+
+                // Z-index from layer definition if present, else array order
+                if (layer.zIndex) imgEl.style.zIndex = layer.zIndex;
+
+                container.appendChild(imgEl);
+            });
+        };
+
+        window.addEventListener('sf-paperdollChanged', () => {
+            // Re-render active modal if open
+            const modal = document.getElementById('npc-interaction-modal');
+            if (modal.style.display === 'flex') {
+                // Determine who we are talking to.
+                // We don't have global reference easily unless we store it.
+                // But typically modifyPaperdoll is called via action, so we know update happened.
+                // We can just rely on the fact that if the modal is open, we should refresh it if the ID matches.
+                // For now, simpler: Just re-trigger render if we tracked the NPC.
+                // We'll leave this for advanced polishing.
+            }
+        });
+
+        init();
+
+    </script>
+</body>
+
+</html>

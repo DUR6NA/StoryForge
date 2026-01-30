@@ -1,0 +1,15 @@
+:root {
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --bg-tertiary: #2d2d2d;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --accent-color: #e65100;
+    --accent-glow: rgba(230, 81, 0, 0.5);
+    --accent-text: #ffffff;
+    --border-color: #333333;
+    --panel-backdrop: none;
+    --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    --bg-gradient: none;
+    --modal-backdrop: rgba(0, 0, 0, 0.85);
+}

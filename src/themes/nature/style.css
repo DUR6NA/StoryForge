@@ -1,0 +1,25 @@
+:root {
+    --bg-primary: #f1f8e9;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #dcedc8;
+    --text-primary: #33691e;
+    --text-secondary: #558b2f;
+    --accent-color: #7cb342;
+    --accent-glow: rgba(124, 179, 66, 0.4);
+    --accent-text: #ffffff;
+    --border-color: #c5e1a5;
+    --panel-backdrop: none;
+    --card-shadow: 0 4px 10px rgba(0, 50, 0, 0.1);
+    --bg-gradient: linear-gradient(120deg, #f1f8e9 0%, #dcedc8 100%);
+    --modal-backdrop: rgba(255, 255, 255, 0.6);
+}
+
+/* Glass Override */
+body.glass-mode {
+    --bg-primary: transparent;
+    --bg-secondary: rgba(241, 248, 233, 0.4);
+    --bg-tertiary: rgba(220, 237, 200, 0.5);
+    --border-color: rgba(51, 105, 30, 0.2);
+    --card-shadow: 0 8px 32px 0 rgba(0, 50, 0, 0.15);
+    --text-primary: #33691e;
+}

@@ -1,0 +1,386 @@
+{
+    "story": [],
+    "locations": [
+        {
+            "id": "start",
+            "name": "start",
+            "text": "Welcome to The Afterlife. your human body is dead but lucky for you, your conscious was insured and was upload to our servers after your death. Here you can live on forever, unburdened by what came before. Enjoy.\n\nThis game is a work of fiction, by clicking proceed you agree to waive your freedom of speech in regards to the term \"six seven\".",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Proceed",
+                    "action": "goto",
+                    "target": "Lobby"
+                }
+            ],
+            "editor": {
+                "x": 299.1735537190082,
+                "y": 509.42148760330565,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        },
+        {
+            "id": "Lobby",
+            "name": "Olympus Afterlife Center lobby.",
+            "text": "You are in the lobby of the Olympus Afterlife Center. one of the most private and prestigious Domains In the Afterlife. the lobby is made of fine white marble features, and decorated with lush plants. all the surfaces are refined and no detail missed. their is to silver elevators, large open glass doors to the grounds to the south, a east & west wing hallway , and help desks to the north.",
+            "images": {
+                "default": "assets/locs/olobby/olobbyday.png",
+                "night": "assets/locs/olobby/olobbynight.png",
+                "dawn": "assets/locs/olobby/olobbydawn.png",
+                "dusk": "assets/locs/olobby/olobbydusk.png"
+            },
+            "choices": [
+                {
+                    "text": "Talk to Receptionist",
+                    "type": "npc_interact",
+                    "target": "olobbyr"
+                },
+                {
+                    "text": "enter the elevator",
+                    "action": "goto",
+                    "target": "melevator"
+                },
+                {
+                    "text": "Go to 10th floor",
+                    "action": "navigate",
+                    "target": "10f"
+                }
+            ],
+            "editor": {
+                "x": 186.61983471074376,
+                "y": 177.1776859504132,
+                "w": 278,
+                "h": 163,
+                "ports": 2
+            }
+        },
+        {
+            "id": "10f",
+            "name": "10th floor",
+            "text": "you are in the hallway of the 10th floor.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "enter the elevator",
+                    "action": "goto",
+                    "target": "melevator"
+                }
+            ],
+            "editor": {
+                "x": 550,
+                "y": 189,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        },
+        {
+            "id": "melevator",
+            "name": "The elevator",
+            "text": "you are in the elevator, it is clean and fancy. there are many floor buttons.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "lobby",
+                    "action": "goto",
+                    "target": "Lobby"
+                },
+                {
+                    "text": "10th floor",
+                    "action": "goto",
+                    "target": "10f"
+                },
+                {
+                    "text": "Go to New Location",
+                    "action": "navigate",
+                    "target": "loc_1765342698623"
+                }
+            ],
+            "editor": {
+                "x": 850,
+                "y": 100,
+                "w": 200,
+                "h": 120,
+                "ports": 2
+            }
+        },
+        {
+            "id": "loc_1765342698623",
+            "name": "New Location",
+            "text": "You are in a new location.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to New Location",
+                    "action": "navigate",
+                    "target": "loc_1765342698966"
+                }
+            ],
+            "editor": {
+                "x": 1100,
+                "y": 100,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        },
+        {
+            "id": "loc_1765342698966",
+            "name": "New Location",
+            "text": "You are in a new location.",
+            "images": {},
+            "choices": [],
+            "editor": {
+                "x": 1350,
+                "y": 100,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        },
+        {
+            "id": "loc_1767033669466",
+            "name": "New Location",
+            "text": "You are in a new location.",
+            "images": {},
+            "choices": [],
+            "editor": {
+                "x": 264.3571244898256,
+                "y": 323.8209459051458,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        }
+    ],
+    "characters": [
+        {
+            "id": "olobbyr",
+            "name": "Katie the receptionist.",
+            "description": "Katie is the main receptionist of Olympus and is seemingly here 24/7. she is good looking and well dressed her hair up in a bun.",
+            "stats": {
+                "Trust": 0,
+                "Love": 0,
+                "Friendship": 0
+            },
+            "schedule": [],
+            "dialogue": [
+                {
+                    "id": "start",
+                    "text": "Welcome to the afterlife [player name]. how might I help you?",
+                    "options": []
+                },
+                {
+                    "id": "playerroom",
+                    "text": "your room is number 16 on the 10th floor.",
+                    "options": [
+                        {
+                            "setVar": "krn",
+                            "setVal": true
+                        }
+                    ]
+                }
+            ],
+            "shop": {
+                "enabled": true,
+                "inventory": [
+                    "whitem"
+                ],
+                "currencyId": "qbit"
+            },
+            "visibility": "",
+            "appearance": {
+                "type": "paperdoll",
+                "path": "",
+                "paperdollId": "pd_1765602906482"
+            }
+        }
+    ],
+    "variables": {
+        "krn": false
+    },
+    "items": [
+        {
+            "id": "whitem",
+            "name": "White Monster",
+            "type": "consumable",
+            "effects": {}
+        }
+    ],
+    "startMenu": {
+        "title": "The Afterlife",
+        "background": "",
+        "subtitle": "Welcome to life after death."
+    },
+    "economy": [
+        {
+            "id": "curr_1765429605129",
+            "name": "Qubit",
+            "symbol": "λ",
+            "initial": "100"
+        }
+    ],
+    "currencies": [
+        {
+            "id": "qbit",
+            "name": "Qubits",
+            "symbol": "λ",
+            "description": ""
+        }
+    ],
+    "settings": {
+        "title": "The Afterlife",
+        "version": "Welcome to life after death.",
+        "menuBackground": ""
+    },
+    "paperdolls": [
+        {
+            "id": "",
+            "name": "New Paperdoll",
+            "layers": [
+                {
+                    "name": "Body",
+                    "zIndex": 0,
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1765602970002_101.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "Head",
+                    "zIndex": 1,
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1765602975838_131.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "Eyes",
+                    "zIndex": 2,
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1765602981805_476.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "Hair",
+                    "zIndex": 3,
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1765602953229_502.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "bits and peices",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1765602996346_178.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "mouth",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1765603035007_862.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "shoe",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1765603053582_459.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "pants",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1765603070445_575.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "shirt",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1765603089718_976.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "nose",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1765603021161_283.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "hat",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1765603107465_341.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                }
+            ]
+        }
+    ],
+    "player": {
+        "stats": [],
+        "config": {
+            "creationEnabled": false,
+            "visualType": "none",
+            "defaultImage": "",
+            "openSections": {
+                "identity": true,
+                "appearance": true,
+                "stats": true,
+                "cheats": false
+            },
+            "startPoints": 10
+        }
+    }
+}

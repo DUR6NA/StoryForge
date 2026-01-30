@@ -1,0 +1,15 @@
+{
+    "name": "storyforge",
+    "version": "1.0.0",
+    "description": "StoryForge Game Engine and Launcher",
+    "main": "src/main.js",
+    "scripts": {
+        "start": "electron ."
+    },
+    "author": "User",
+    "license": "ISC",
+    "devDependencies": {
+        "electron": "^28.2.0",
+        "electron-builder": "^26.4.0"
+    }
+}

@@ -1,0 +1,19 @@
+:root {
+    --bg-primary: #000000;
+    /* Lighter/More Opaque Panels for visibility */
+    --bg-secondary: rgba(10, 50, 10, 0.9);
+    --bg-tertiary: rgba(20, 70, 20, 0.85);
+
+    --text-primary: #00ff00;
+    --text-secondary: #44ff44;
+
+    --accent-color: #00ff41;
+    --accent-glow: rgba(0, 255, 65, 0.6);
+    --accent-text: #000000;
+
+    --border-color: #00aa00;
+    --panel-backdrop: blur(4px);
+    --card-shadow: 0 0 15px rgba(0, 255, 0, 0.15);
+
+    --bg-gradient: none;
+}

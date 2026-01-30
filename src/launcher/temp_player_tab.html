@@ -1,0 +1,107 @@
+<!-- PLAYER TAB -->
+<div id="editor-view-player" class="editor-subview hidden">
+    <div style="padding-right: 20px; max-width: 800px;">
+        <h2 style="color: var(--accent-color);">Player Configuration</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">
+            Configure the player character, starting stats, and the character creation screen.
+        </p>
+
+        <div class="setting-row">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <span>Enable Character Creation Screen</span>
+                <input type="checkbox" id="player-enable-creation" onchange="savePlayerConfig()"
+                    style="width:auto; margin:0;">
+            </label>
+            <p style="font-size:0.8em; color:var(--text-secondary); margin-top:5px;">
+                If enabled, a character creation screen will appear after clicking "New Game".
+            </p>
+        </div>
+
+        <hr style="border-color: var(--border-color); opacity: 0.3; margin: 30px 0;">
+
+        <h3>Player Attributes & Stats</h3>
+        <p style="font-size:0.8em; opacity:0.7; margin-bottom:10px;">
+            Define variables that define the player (e.g., strength, intelligence, age). These can be modified in the
+            creation screen.
+        </p>
+        <div id="player-stats-list" class="dynamic-list" style="margin-bottom:10px;">
+            <!-- Valid Stats Injected Here -->
+        </div>
+        <button class="secondary-btn" onclick="addPlayerStat()">+ Add Attribute</button>
+
+        <hr style="border-color: var(--border-color); opacity: 0.3; margin: 30px 0;">
+
+        <h3>Visual Representation</h3>
+        <div class="setting-row">
+            <label>Representation Type</label>
+            <select id="player-visual-type" class="input-dark"
+                onchange="togglePlayerVisualSettings(); savePlayerConfig();">
+                <option value="none">None (Text Only)</option>
+                <option value="image">Static Image</option>
+                <option value="paperdoll">Paperdoll (Dynamic)</option>
+            </select>
+        </div>
+
+        <div id="player-visual-image-settings" class="hidden">
+            <div class="setting-row">
+                <label>Default Image Path</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="player-default-image" class="input-dark"
+                        placeholder="assets/player/default.png" onchange="savePlayerConfig()">
+                    <button class="secondary-btn" onclick="uploadPlayerImage()">Upload</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="player-visual-paperdoll-settings" class="hidden">
+            <div class="setting-row">
+                <label>Paperdoll Definition</label>
+                <select id="player-paperdoll-select" class="input-dark" onchange="savePlayerConfig()">
+                    <option value="">-- Select a Paperdoll --</option>
+                </select>
+                <p style="font-size:0.8em; opacity:0.7;">Create paperdolls in the "Paperdolls" tab first.</p>
+            </div>
+        </div>
+
+        <hr style="border-color: var(--border-color); opacity: 0.3; margin: 30px 0;">
+
+        <h3>Creation Screen Content</h3>
+        <div class="setting-row">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" id="creation-show-identity" onchange="savePlayerConfig()"
+                    style="width:auto; margin:0;" checked>
+                <span>Show Identity Tab (Name, Pronouns, etc.)</span>
+            </label>
+        </div>
+        <div class="setting-row">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" id="creation-show-appearance" onchange="savePlayerConfig()"
+                    style="width:auto; margin:0;" checked>
+                <span>Show Appearance Tab</span>
+            </label>
+        </div>
+        <div class="setting-row">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" id="creation-show-stats" onchange="savePlayerConfig()"
+                    style="width:auto; margin:0;" checked>
+                <span>Show Stats Assignment Tab</span>
+            </label>
+        </div>
+        <div class="setting-row">
+            <label>Starting Stat Points</label>
+            <input type="number" id="creation-stat-points" class="input-dark" value="10" onchange="savePlayerConfig()">
+        </div>
+        <div class="setting-row">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" id="creation-show-cheats" onchange="savePlayerConfig()"
+                    style="width:auto; margin:0;">
+                <span>Show Cheats / Rules Tab</span>
+            </label>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button class="primary-btn" onclick="savePlayerConfig()">Save Player Configuration</button>
+        </div>
+
+    </div>
+</div>

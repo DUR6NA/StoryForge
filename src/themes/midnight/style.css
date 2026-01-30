@@ -1,0 +1,14 @@
+:root {
+    --bg-primary: #0f0c29;
+    --bg-secondary: #302b63;
+    --bg-tertiary: #24243e;
+    --text-primary: #ffffff;
+    --text-secondary: #b8b8d9;
+    --accent-color: #ffd700;
+    --accent-glow: rgba(255, 215, 0, 0.4);
+    --accent-text: #000000;
+    --border-color: #5c5c8a;
+    --panel-backdrop: blur(5px);
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --bg-gradient: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+}

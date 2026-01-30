@@ -1,0 +1,896 @@
+{
+    "story": [],
+    "locations": [
+        {
+            "id": "loc_1767573130173",
+            "name": "Dresser",
+            "text": "A vintage oak dresser stands against the wall, its surface slightly cluttered with everyday essentials and a small vanity mirror.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to bedroom",
+                    "action": "navigate",
+                    "target": "loc_1767573617635",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 516.6216229985755,
+                "y": 678.5622244611269,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        },
+        {
+            "id": "start",
+            "name": "start",
+            "text": "Welcome to the demo",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to New Location",
+                    "action": "navigate",
+                    "target": "loc_1767573617635",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 265.4320987654321,
+                "y": 265.9259259259259,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        },
+        {
+            "id": "loc_1767573131481",
+            "name": "Desk",
+            "text": "A cluttered wooden desk sits in the corner, covered in scattered papers, a laptop, and a few coffee mugs.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to bedroom",
+                    "action": "navigate",
+                    "target": "loc_1767573617635",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 19.71280721171786,
+                "y": 684.7517910190525,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        },
+        {
+            "id": "loc_1767573617635",
+            "name": "bedroom",
+            "text": "A cozy bedroom with a soft unmade bed, sunlight filtering through the curtains, and a sense of lived-in comfort.",
+            "images": {
+                "dawn": "assets/bedroom/dawn.png",
+                "day": "assets/bedroom/day.png",
+                "dusk": "assets/bedroom/dusk.png",
+                "night": "assets/bedroom/night.png"
+            },
+            "choices": [
+                {
+                    "text": "Go to Desk",
+                    "action": "navigate",
+                    "target": "loc_1767573131481",
+                    "portIndex": 0
+                },
+                {
+                    "text": "Go to Hallway",
+                    "action": "navigate",
+                    "target": "loc_1767573628651",
+                    "portIndex": 0
+                },
+                {
+                    "text": "Go to Dresser",
+                    "action": "navigate",
+                    "target": "loc_1767573130173",
+                    "portIndex": 0
+                },
+                {
+                    "text": "Janet",
+                    "action": "npc_interact",
+                    "target": "Janet1"
+                },
+                {
+                    "text": "JanetDialogue",
+                    "action": "start_dialogue",
+                    "dialogueId": "Introduction"
+                }
+            ],
+            "editor": {
+                "x": 270.33258133145887,
+                "y": 503.056679779463,
+                "w": 200,
+                "h": 120,
+                "ports": 3
+            }
+        },
+        {
+            "id": "loc_1767573628651",
+            "name": "Hallway",
+            "text": "A narrow hallway lined with family photos, the floorboards creaking slightly underfoot, leading to various rooms.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to Kitchen",
+                    "action": "navigate",
+                    "target": "loc_1767573891204",
+                    "portIndex": 0
+                },
+                {
+                    "text": "Go to Office",
+                    "action": "navigate",
+                    "target": "loc_1767573900010",
+                    "portIndex": 0
+                },
+                {
+                    "text": "Go to bedroom",
+                    "action": "navigate",
+                    "target": "loc_1767573617635",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 269.28111223056345,
+                "y": 681.1567053433089,
+                "w": 200,
+                "h": 120,
+                "ports": 3
+            }
+        },
+        {
+            "id": "loc_1767573891204",
+            "name": "Kitchen",
+            "text": "A bright kitchen with checkered tile floors, the smell of lingering coffee, and sunlight hitting the breakfast table.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to Hallway",
+                    "action": "navigate",
+                    "target": "loc_1767573628651",
+                    "portIndex": 0
+                },
+                {
+                    "text": "Go to Back patio",
+                    "action": "navigate",
+                    "target": "loc_1767574328220",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 267.0709988864825,
+                "y": 936.4728425269172,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        },
+        {
+            "id": "loc_1767573900010",
+            "name": "Office",
+            "text": "A quiet home office with tall bookshelves filled with books and a mahogany desk organizing a neat workspace.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to Hallway",
+                    "action": "navigate",
+                    "target": "loc_1767573628651",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 17.232099120813785,
+                "y": 942.2383555984327,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        },
+        {
+            "id": "loc_1767574024759",
+            "name": "River St",
+            "text": "A paved road running distinctively alongside a gently flowing river, reflecting the sky above.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to Main St",
+                    "action": "navigate",
+                    "target": "loc_1767574047566",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 1591.2761355824637,
+                "y": 566.0893887891647,
+                "w": 200,
+                "h": 120,
+                "ports": 2
+            }
+        },
+        {
+            "id": "loc_1767574047566",
+            "name": "Main St",
+            "text": "The bustling main street of the town, with storefronts displaying their wares and people going about their day.",
+            "images": {
+                "dawn": "assets/main_st/dawn.png",
+                "day": "assets/main_st/day.png",
+                "dusk": "assets/main_st/dusk.png",
+                "night": "assets/main_st/night.png"
+            },
+            "choices": [
+                {
+                    "text": "Go to River St",
+                    "action": "navigate",
+                    "target": "loc_1767574024759",
+                    "portIndex": 1
+                },
+                {
+                    "text": "Go to Palm St",
+                    "action": "navigate",
+                    "target": "loc_1767574066024",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 1591.308961624846,
+                "y": 928.9742361950907,
+                "w": 200,
+                "h": 120,
+                "ports": 2
+            }
+        },
+        {
+            "id": "loc_1767574066024",
+            "name": "Palm St",
+            "text": "A scenic street flanked by tall, swaying palm trees, giving the area a tropical and relaxed vibe.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to Main St",
+                    "action": "navigate",
+                    "target": "loc_1767574047566",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 1617.989282837468,
+                "y": 1382.5099517702354,
+                "w": 200,
+                "h": 120,
+                "ports": 2
+            }
+        },
+        {
+            "id": "loc_1767574107874",
+            "name": "Forest",
+            "text": "A dense, green forest with ancient trees towering overhead, their leaves rustling in the wind.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to clearing in the woods",
+                    "action": "navigate",
+                    "target": "loc_1767574127292",
+                    "portIndex": 0
+                },
+                {
+                    "text": "Go to Back yard",
+                    "action": "navigate",
+                    "target": "loc_1767574339675",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 814.9252934838993,
+                "y": 704.6638401744998,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        },
+        {
+            "id": "loc_1767574127292",
+            "name": "clearing in the woods",
+            "text": "A peaceful, grassy circular clearing surrounded by the dense woods, bathed in dappled sunlight.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to Forest",
+                    "action": "navigate",
+                    "target": "loc_1767574107874",
+                    "portIndex": 0
+                },
+                {
+                    "text": "Go to cave",
+                    "action": "navigate",
+                    "target": "loc_1767574150726",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 882.590656279214,
+                "y": 479.6611894590502,
+                "w": 200,
+                "h": 120,
+                "ports": 2
+            }
+        },
+        {
+            "id": "loc_1767574150726",
+            "name": "cave",
+            "text": "A dark, foreboding cave entrance carved into the rock face, hinting at depths unknown.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to clearing in the woods",
+                    "action": "navigate",
+                    "target": "loc_1767574127292",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 566.9146288791294,
+                "y": 343.3876563198266,
+                "w": 200,
+                "h": 120,
+                "ports": 2
+            }
+        },
+        {
+            "id": "loc_1767574226603",
+            "name": "messy tent",
+            "text": "A makeshift campsite with a messy tent, sleeping bags disarrayed and gear scattered around.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to clearing in the woods",
+                    "action": "navigate",
+                    "target": "loc_1767574127292",
+                    "portIndex": 1
+                }
+            ],
+            "editor": {
+                "x": 1138.1351057115846,
+                "y": 328.6654790818767,
+                "w": 200,
+                "h": 120,
+                "ports": 2
+            }
+        },
+        {
+            "id": "loc_1767574279033",
+            "name": "743 Spring St",
+            "text": "A charming two-story house at 743 Spring St with a welcoming porch and a well-tended garden.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to Back patio",
+                    "action": "navigate",
+                    "target": "loc_1767574328220",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 871.0375567071261,
+                "y": 962.3905044175991,
+                "w": 200,
+                "h": 120,
+                "ports": 2
+            }
+        },
+        {
+            "id": "loc_1767574328220",
+            "name": "Back patio",
+            "text": "A paved back patio with a grill and patio furniture, overlooking the yard.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to 743 Spring St",
+                    "action": "navigate",
+                    "target": "loc_1767574279033",
+                    "portIndex": 0
+                },
+                {
+                    "text": "Go to Kitchen",
+                    "action": "navigate",
+                    "target": "loc_1767573891204",
+                    "portIndex": 0
+                },
+                {
+                    "text": "Go to Back yard",
+                    "action": "navigate",
+                    "target": "loc_1767574339675",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 609.5679739610533,
+                "y": 1108.7001924064407,
+                "w": 200,
+                "h": 120,
+                "ports": 2
+            }
+        },
+        {
+            "id": "loc_1767574339675",
+            "name": "Back yard",
+            "text": "A spacious grassy backyard, enclosed by a wooden fence, with plenty of room to run and play.",
+            "images": {},
+            "choices": [
+                {
+                    "text": "Go to Forest",
+                    "action": "navigate",
+                    "target": "loc_1767574107874",
+                    "portIndex": 0
+                },
+                {
+                    "text": "Go to Back patio",
+                    "action": "navigate",
+                    "target": "loc_1767574328220",
+                    "portIndex": 0
+                }
+            ],
+            "editor": {
+                "x": 202.1924783222368,
+                "y": 1112.0393358133163,
+                "w": 200,
+                "h": 120,
+                "ports": 1
+            }
+        }
+    ],
+    "characters": [
+        {
+            "id": "Janet1",
+            "name": "Janet",
+            "description": "",
+            "stats": {},
+            "schedule": [
+                {
+                    "time": "08:00",
+                    "location": "",
+                    "activity": "standing"
+                }
+            ],
+            "dialogue": [
+                {
+                    "id": "start",
+                    "text": "Hello",
+                    "options": [
+                        {
+                            "text": "Yes...",
+                            "action": "start_dialogue"
+                        }
+                    ]
+                }
+            ],
+            "shop": {
+                "enabled": false,
+                "items": [],
+                "currencyId": "default"
+            },
+            "visibility": "",
+            "appearance": {
+                "type": "image",
+                "path": "assets\\janet\\janet.png",
+                "paperdollId": ""
+            }
+        },
+        {
+            "id": "narrator",
+            "name": "narrator",
+            "description": "",
+            "stats": {
+                "hp": 10,
+                "strength": 5
+            },
+            "schedule": [
+                {
+                    "time": "08:00",
+                    "location": "",
+                    "activity": "standing"
+                }
+            ],
+            "dialogue": [],
+            "shop": {
+                "enabled": false,
+                "items": [],
+                "currencyId": "default"
+            },
+            "visibility": "",
+            "appearance": {
+                "type": "image",
+                "path": "",
+                "paperdollId": ""
+            }
+        }
+    ],
+    "variables": {},
+    "items": [],
+    "currencies": [],
+    "paperdolls": [
+        {
+            "id": "p1",
+            "name": "player",
+            "layers": [
+                {
+                    "name": "base",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1767828046806_633.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "eyes",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1767828115364_737.png",
+                            "colorways": [
+                                "assets/paperdolls/1767828119543_954.png"
+                            ]
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": 0
+                },
+                {
+                    "name": "hair",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1767828139432_525.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "nose",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1767828174743_354.png",
+                            "colorways": [
+                                "assets/paperdolls/1767828180848_503.png"
+                            ]
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": 0
+                },
+                {
+                    "name": "mouth",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1767828241292_51.png",
+                            "colorways": [
+                                "assets/paperdolls/1767828245165_497.png"
+                            ]
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": 0
+                },
+                {
+                    "name": "shoes",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1767828298725_512.png",
+                            "colorways": []
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "bottom",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1767828058780_602.png",
+                            "colorways": [
+                                "assets/paperdolls/1767828079293_725.png"
+                            ]
+                        }
+                    ],
+                    "selectedImageIdx": 0,
+                    "selectedColorwayIdx": -1
+                },
+                {
+                    "name": "Top",
+                    "images": [
+                        {
+                            "base": "assets/paperdolls/1767834660568_302.png",
+                            "colorways": [
+                                "assets/paperdolls/1767834675529_186.png"
+                            ]
+                        },
+                        {
+                            "base": "assets/paperdolls/1767834667270_923.png",
+                            "colorways": [
+                                "assets/paperdolls/1767834689613_276.png"
+                            ]
+                        }
+                    ],
+                    "selectedImageIdx": 1,
+                    "selectedColorwayIdx": 0
+                }
+            ]
+        },
+        {
+            "id": "pd_1767575968331",
+            "name": "New Paperdoll",
+            "layers": [
+                {
+                    "name": "Body",
+                    "zIndex": 0,
+                    "images": []
+                },
+                {
+                    "name": "Head",
+                    "zIndex": 1,
+                    "images": []
+                },
+                {
+                    "name": "Eyes",
+                    "zIndex": 2,
+                    "images": []
+                },
+                {
+                    "name": "Hair",
+                    "zIndex": 3,
+                    "images": []
+                }
+            ]
+        }
+    ],
+    "player": {
+        "stats": [
+            {
+                "id": "str",
+                "name": "Strength",
+                "type": "number",
+                "default": 0,
+                "cost": 1
+            },
+            {
+                "id": "int",
+                "name": "Intelligence",
+                "type": "number",
+                "default": 0,
+                "cost": 1
+            }
+        ],
+        "config": {
+            "creationEnabled": true,
+            "visualType": "paperdoll",
+            "defaultImage": "",
+            "openSections": {
+                "identity": true,
+                "appearance": true,
+                "stats": true,
+                "cheats": false
+            },
+            "startPoints": 10,
+            "paperdollId": "p1",
+            "customizableLayers": [
+                "eyes",
+                "hair",
+                "nose",
+                "mouth",
+                "shoes",
+                "bottom",
+                "Top"
+            ],
+            "removableLayers": [
+                "hair",
+                "Top"
+            ]
+        }
+    },
+    "settings": {},
+    "walkthrough": {
+        "chapters": []
+    },
+    "dialogues": [
+        {
+            "id": "Introduction",
+            "participants": [
+                "player",
+                "janet1"
+            ],
+            "nodes": [
+                {
+                    "id": "node_1767985503968",
+                    "text": "Hey Janet!",
+                    "speaker": "player",
+                    "choices": [
+                        {
+                            "text": "...",
+                            "targetNodeId": "node_1767985524365",
+                            "portIndex": 0
+                        }
+                    ],
+                    "editor": {
+                        "x": 689,
+                        "y": 254,
+                        "w": 220,
+                        "h": 140,
+                        "ports": 1
+                    },
+                    "image": "",
+                    "requirements": [],
+                    "outcomes": []
+                },
+                {
+                    "id": "node_1767985524365",
+                    "text": "Hi, what can I do for you?",
+                    "speaker": "Janet1",
+                    "choices": [
+                        {
+                            "text": "...",
+                            "targetNodeId": "node_1767985568743",
+                            "portIndex": 0
+                        }
+                    ],
+                    "editor": {
+                        "x": 688.0144896093536,
+                        "y": 456.3671330453616,
+                        "w": 220,
+                        "h": 140,
+                        "ports": 1
+                    },
+                    "image": "",
+                    "requirements": [],
+                    "outcomes": []
+                },
+                {
+                    "id": "node_1767985568743",
+                    "text": "I need to improve some stats, what can I do?",
+                    "speaker": "player",
+                    "choices": [
+                        {
+                            "text": "...",
+                            "targetNodeId": "node_1767985609169",
+                            "portIndex": 0
+                        }
+                    ],
+                    "editor": {
+                        "x": 695.2691667876205,
+                        "y": 686.9046522658415,
+                        "w": 202.73083321237948,
+                        "h": 163.0953477341585,
+                        "ports": 1
+                    },
+                    "image": "",
+                    "requirements": [],
+                    "outcomes": []
+                },
+                {
+                    "id": "node_1767985609169",
+                    "text": "which stat?",
+                    "speaker": "Janet1",
+                    "choices": [
+                        {
+                            "text": "Intelligence",
+                            "targetNodeId": "node_1767985631313",
+                            "portIndex": 1
+                        },
+                        {
+                            "text": "Strength",
+                            "targetNodeId": "node_1767985630723",
+                            "portIndex": 2
+                        }
+                    ],
+                    "editor": {
+                        "x": 698.4934677557391,
+                        "y": 905.3510428558767,
+                        "w": 220,
+                        "h": 140,
+                        "ports": 3
+                    },
+                    "image": "",
+                    "requirements": [],
+                    "outcomes": []
+                },
+                {
+                    "id": "node_1767985630723",
+                    "text": "Strength!",
+                    "speaker": "player",
+                    "choices": [
+                        {
+                            "text": "...",
+                            "targetNodeId": "node_1767985684012",
+                            "portIndex": 0
+                        }
+                    ],
+                    "editor": {
+                        "x": 824.339615246988,
+                        "y": 1138.559999366814,
+                        "w": 220,
+                        "h": 140,
+                        "ports": 1
+                    },
+                    "image": "",
+                    "requirements": [],
+                    "outcomes": []
+                },
+                {
+                    "id": "node_1767985631313",
+                    "text": "Intelligence!",
+                    "speaker": "player",
+                    "choices": [
+                        {
+                            "text": "...",
+                            "targetNodeId": "node_1767985676501",
+                            "portIndex": 0
+                        }
+                    ],
+                    "editor": {
+                        "x": 497.5773098948457,
+                        "y": 1138.8991759815358,
+                        "w": 220,
+                        "h": 140,
+                        "ports": 1
+                    },
+                    "image": "",
+                    "requirements": [],
+                    "outcomes": []
+                },
+                {
+                    "id": "node_1767985676501",
+                    "text": "You can go to the library, but I will give you a head start. Here +2 Intelligence",
+                    "speaker": "Janet1",
+                    "choices": [],
+                    "editor": {
+                        "x": 499.67200326621503,
+                        "y": 1402.3293985419623,
+                        "w": 220,
+                        "h": 140,
+                        "ports": 1
+                    },
+                    "image": "",
+                    "requirements": [],
+                    "outcomes": [
+                        {
+                            "type": "mod_stat",
+                            "key": "int",
+                            "val": "2"
+                        }
+                    ]
+                },
+                {
+                    "id": "node_1767985684012",
+                    "text": "You can go to the gym, but I will give you a head start. here +2 Strength.",
+                    "speaker": "player",
+                    "choices": [],
+                    "editor": {
+                        "x": 847.2420238198516,
+                        "y": 1401.1898247040815,
+                        "w": 220,
+                        "h": 140,
+                        "ports": 1
+                    },
+                    "image": "",
+                    "requirements": [],
+                    "outcomes": [
+                        {
+                            "type": "mod_stat",
+                            "key": "str",
+                            "val": "2"
+                        }
+                    ]
+                }
+            ],
+            "rootNodeId": "node_1767985503968"
+        }
+    ]
+}
